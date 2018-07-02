@@ -1,4 +1,4 @@
-# [Estudo] Balança Comercial - Brasil - jan/1997 a dez/2017
+# [Estudo] Balança Comercial - Brasil
 
 Fonte dos dados:
 

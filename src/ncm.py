@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 
-DATA_DIR = "DATA"
+DATA_DIR = os.path.join("..", "DATA")
 
 
 def open_ncm_file(filename):
@@ -11,7 +11,7 @@ def open_ncm_file(filename):
         sep=";",
         decimal=",",
         header=0,
-        encoding="latin1",
+        encoding="latin-1",
         dtype=str
     )
 
@@ -28,12 +28,12 @@ def merge_ncm(ncm, path_folder):
 
 
 def main():
-    ncm = open_ncm_file(os.path.join(DATA_DIR, "NCM.csv"))
+    ncm = open_ncm_file(os.path.join(DATA_DIR, "ncm", "NCM.csv"))
     ncm = merge_ncm(ncm, "DATA")
     ncm = ncm[[c for c in ncm
                if (not c.endswith("_ESP")) and (not c.endswith("_ING"))
                ]]
-    ncm_out = os.path.join(DATA_DIR, "ncm_complete.xlsx")
+    ncm_out = os.path.join(DATA_DIR, "ncm", "ncm_complete.xlsx")
     print("Salvando arquivo:", ncm_out)
     ncm.to_excel(ncm_out, index=False)
 

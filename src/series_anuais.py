@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 
-PATH_SERIE_BC = os.path.join("DATA", "serie_historica_BC.csv")
-PATH_NCM = os.path.join("DATA", "ncm_complete.csv")
+PATH_SERIE_BC = os.path.join("..", "DATA", "serie_historica_BC.csv")
+PATH_NCM = os.path.join("..", "DATA", "ncm_complete.csv")
 
 
 def anualize_bc(nx, ncm, fields=[]):

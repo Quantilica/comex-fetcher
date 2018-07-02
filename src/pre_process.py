@@ -4,7 +4,7 @@ import zipfile
 import os
 
 
-DATA_DIR = "DATA"
+DATA_DIR = os.path.join("..", "DATA")
 
 
 def open_historical_data(filename):
@@ -86,20 +86,20 @@ def merge_ncm(ncm, path_folder):
 
 
 def main():
-    path_exp = os.path.join(DATA_DIR, "EXP_COMPLETA.zip")
-    path_imp = os.path.join(DATA_DIR, "IMP_COMPLETA.zip")
+    path_exp = os.path.join(DATA_DIR, "ncm", "EXP_COMPLETA.zip")
+    path_imp = os.path.join(DATA_DIR, "ncm", "IMP_COMPLETA.zip")
     path_out = os.path.join(DATA_DIR, "serie_historica_bc.csv")
     agrupado = groupby_year_ncm(path_exp, path_imp)
 
     print("Salvando arquivo:", path_out)
     agrupado.to_csv(path_out, index=False, encoding="utf-8")
 
-    ncm = open_ncm_file(os.path.join(DATA_DIR, "NCM.csv"))
+    ncm = open_ncm_file(os.path.join(DATA_DIR, "ncm", "NCM.csv"))
     ncm = merge_ncm(ncm, "DATA")
     ncm = ncm[[c for c in ncm
                if (not c.endswith("_ESP")) and (not c.endswith("_ING"))
                ]]
-    ncm_out = os.path.join(DATA_DIR, "ncm_complete.csv")
+    ncm_out = os.path.join(DATA_DIR, "ncm", "ncm_complete.csv")
     print("Salvando arquivo:", ncm_out)
     ncm.to_csv(ncm_out, index=False, encoding="utf-8")
 
