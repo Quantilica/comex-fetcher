@@ -65,13 +65,16 @@ PATH_DATA_IMP_BY_NCM = os.path.join(PATH_DATA_EXP, "by_ncm")
 if not os.path.exists(PATH_DATA_IMP_BY_NCM):
     os.makedirs(PATH_DATA_IMP_BY_NCM)
 
-for ncm_cod in ncm_data["CO_NCM"].unique():
-    print(ncm_cod)
-    d = ncm_ts(PATH_DATA_IMP, ncm_cod)
-    print("  LEN", len(d))
-    d.to_csv(
-        os.path.join(PATH_DATA_IMP_BY_NCM, f"{ncm_cod}.csv"),
-        sep=";",
-        decimal=",",
-        encoding="latin-1",
-    )
+for n0 in ncm_data["N0"].unique():
+    c_n0 = ncm_data.loc[ncm_data["N0"] == n0, :]
+    for n1 in c_n0["N1"].unique():
+        print(n0, n1)
+        c_n1 = c_n0.loc[c_n0["N1"] == n1, :]
+        d = ncm_ts(PATH_DATA_IMP, c_n1["CO_NCM"])
+        print("  LEN", len(d))
+        d.to_csv(
+            os.path.join(PATH_DATA_IMP_BY_NCM, f"{n0}{n1}.csv"),
+            sep=";",
+            decimal=",",
+            encoding="latin-1",
+        )
