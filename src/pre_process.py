@@ -3,6 +3,8 @@ import numpy as np
 import zipfile
 import os
 
+import commons
+
 
 DATA_DIR = os.path.join("..", "DATA")
 
@@ -85,17 +87,39 @@ def merge_ncm(ncm, path_folder):
     return ncm
 
 
+def separate_by_year(filename, dest, t):
+    data = commons.open_zip_mdic_data(filename)
+    for year in data["CO_ANO"].unique():
+        print(t, year)
+        dy = data.loc[data["CO_ANO"] == year]
+        folder = os.path.join(dest, t)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        dy.to_csv(
+            os.path.join(folder, f"{year}.csv"),
+            sep=";", decimal=",", encoding="latin-1", index=False)
+
+
 def main():
-    path_exp = os.path.join(DATA_DIR, "ncm", "EXP_COMPLETA.zip")
-    path_imp = os.path.join(DATA_DIR, "ncm", "IMP_COMPLETA.zip")
+    path_exp = os.path.join(DATA_DIR, "exp", "EXP_COMPLETA.zip")
+    path_imp = os.path.join(DATA_DIR, "imp", "IMP_COMPLETA.zip")
     path_out = os.path.join(DATA_DIR, "serie_historica_bc.csv")
     agrupado = groupby_year_ncm(path_exp, path_imp)
+
+    separate_by_year(
+        filename=path_imp,
+        dest=os.path.join("..", "DATA"),
+        t="IMP")
+    separate_by_year(
+        filename=path_exp,
+        dest=os.path.join("..", "DATA"),
+        t="EXP")
 
     print("Salvando arquivo:", path_out)
     agrupado.to_csv(path_out, index=False, encoding="utf-8")
 
     ncm = open_ncm_file(os.path.join(DATA_DIR, "ncm", "NCM.csv"))
-    ncm = merge_ncm(ncm, "DATA")
+    ncm = merge_ncm(ncm, os.path.join("..", "DATA"))
     ncm = ncm[[c for c in ncm
                if (not c.endswith("_ESP")) and (not c.endswith("_ING"))
                ]]
