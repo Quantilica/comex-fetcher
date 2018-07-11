@@ -7,11 +7,20 @@
 .xls
 .xlsx
 .zip
+.csv
 
 # Docs
 .doc
 .docx
-
+.pdf
 
 # Folders
 plots
+
+# Python
+__pycache__
+.pyc
+.pyo
+
+# Scripts
+.bat
