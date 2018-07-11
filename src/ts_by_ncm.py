@@ -35,7 +35,7 @@ def ncm_ts(directory, ncm_cod):
         d = d.rename(columns={"CO_ANO": "year", "CO_MES": "month"})
         d = d.assign(day=1)
         d.loc[:, "date"] = pd.to_datetime(d[["year", "month", "day"]])
-        d = d.drop(columns=["year", "month", "day"])
+        d = d.drop(labels=["year", "month", "day"], axis=1)
         d = d.set_index("date")
         l1 = len(d)
         print("  len", l0, l1)
