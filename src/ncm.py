@@ -29,7 +29,7 @@ def merge_ncm(ncm, path_folder):
 
 def main():
     ncm = open_ncm_file(os.path.join(DATA_DIR, "ncm", "NCM.csv"))
-    ncm = merge_ncm(ncm, "DATA")
+    ncm = merge_ncm(ncm, os.path.join(DATA_DIR, "ncm"))
     ncm = ncm[[c for c in ncm
                if (not c.endswith("_ESP")) and (not c.endswith("_ING"))
                ]]
