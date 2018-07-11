@@ -3,12 +3,15 @@ import os
 import argparse
 
 
-if not os.path.exists("..", "DATA"):
-    os.makedirs(os.path.join("..", "DATA"))
-    os.makedirs(os.path.join("..", "DATA", "code"))
-    os.makedirs(os.path.join("..", "DATA", "exp"))
-    os.makedirs(os.path.join("..", "DATA", "imp"))
-    os.makedirs(os.path.join("..", "DATA", "ncm"))
+PATH_DATA = os.path.join("..", "DATA")
+
+
+if not os.path.exists(PATH_DATA):
+    os.makedirs(os.path.join(PATH_DATA))
+    os.makedirs(os.path.join(PATH_DATA, "code"))
+    os.makedirs(os.path.join(PATH_DATA, "exp"))
+    os.makedirs(os.path.join(PATH_DATA, "imp"))
+    os.makedirs(os.path.join(PATH_DATA, "ncm"))
 
 
 URL_NCM_TABLES = [
@@ -55,22 +58,22 @@ def download_file(url, path):
 
 def download_ncm():
     for url in URL_NCM_TABLES:
-        download_file(url, os.path.join("..", "DATA", "ncm"))
+        download_file(url, os.path.join(PATH_DATA, "ncm"))
 
 
 def download_code():
     for url in URL_CODE_TABLES:
-        download_file(url, os.path.join("..", "DATA", "code"))
+        download_file(url, os.path.join(PATH_DATA, "code"))
 
 
 def download_exp(year):
     url = CANON_EXP.format(year=year)
-    download_file(url, os.path.join("..", "DATA", "exp"))
+    download_file(url, os.path.join(PATH_DATA, "exp"))
 
 
 def download_imp(year):
     url = CANON_EXP.format(year=year)
-    download_file(url, os.path.join("..", "DATA", "exp"))
+    download_file(url, os.path.join(PATH_DATA, "exp"))
 
 
 def main():

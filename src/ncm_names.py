@@ -2,8 +2,11 @@ import commons
 import os
 
 
+PATH_DATA = os.path.join("..", "DATA")
+
+
 def main():
-    ncm = commons.open_ncm_file(os.path.join("..", "DATA", "ncm", "NCM.csv"))
+    ncm = commons.open_ncm_file(os.path.join(PATH_DATA, "ncm", "NCM.csv"))
 
     ncm = ncm[["CO_NCM", "NO_NCM_POR"]]
     ncm["N0"] = ncm["CO_NCM"].apply(lambda s: "'" + s[0:2])
@@ -17,7 +20,7 @@ def main():
     ncm.set_index("CO_NCM", inplace=True)
 
     ncm.to_csv(
-        os.path.join("..", "DATA", "ncm", "ncm_names.csv"),
+        os.path.join(PATH_DATA, "ncm", "ncm_names.csv"),
         sep=";",
         encoding="latin-1",
     )
