@@ -17,6 +17,7 @@ NCM_TABLES = {
 }
 
 CANON_URL_CODE_TABLES = "http://www.mdic.gov.br/balanca/bd/tabelas/{}.csv"
+
 CODE_TABLES = {
     "pais": "PAIS",
     "pais_bloco": "PAIS_BLOCO",
@@ -24,16 +25,17 @@ CODE_TABLES = {
     "uf": "UF",
     "porto": "PORTO",
     "via": "VIA",
+    "urf": "URF"
 }
 
 URL_COMPLETE_BC_TABLES = [
     # Dados de séries históricas de importações e exportações
-    "http://www.mdic.gov.br/balanca/bd/ncm/EXP_COMPLETA.zip",  # Arquivo da série histórica de exportações
-    "http://www.mdic.gov.br/balanca/bd/ncm/IMP_COMPLETA.zip",  # Arquivo da série histórica de importações
+    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/EXP_COMPLETA.zip",  # Arquivo da série histórica de exportações
+    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_COMPLETA.zip",  # Arquivo da série histórica de importações
 ]
 
-CANON_EXP = "http://www.mdic.gov.br/balanca/bd/ncm/EXP_{year}.csv"
-CANON_IMP = "http://www.mdic.gov.br/balanca/bd/ncm/IMP_{year}.csv"
+CANON_EXP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/EXP_{year}.csv"
+CANON_IMP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_{year}.csv"
 # Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-
 # comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
 
@@ -44,8 +46,14 @@ def download(url, path):
     if not os.path.exists(path):
         os.makedirs(path)
     filename = os.path.join(path, url.rsplit("/", maxsplit=1)[1])
-    print(f"Baixando arquivo: {url:<50} --> {filename}")
-    data = request.urlopen(url)
+    while True:
+        print(f"Baixando arquivo: {url:<50} --> {filename}")
+        try:
+            data = request.urlopen(url)
+        except Exception:
+            print("Erro. Tentando novamente...")
+        else:
+            break
     with open(filename, "wb") as f:
         f.write(data.read())
 

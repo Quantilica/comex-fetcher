@@ -12,10 +12,9 @@ def open_file(filename):
         dtype={
             "CO_NCM": str,
             "CO_UNID": str,
-            "CO_SH6": str,
             "CO_PAIS": str,
-            "CO_UF": str,
-            "CO_PORTO": str,
+            "SG_UF_NCM": str,
+            "CO_URF": str,
             "CO_VIA": str,
             "CO_ANO": str,
             "CO_MES": str,
