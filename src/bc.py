@@ -9,20 +9,11 @@ def open_file(filename):
         decimal=",",
         header=0,
         encoding="latin-1",
-        dtype={
-            "CO_NCM": str,
-            "CO_UNID": str,
-            "CO_PAIS": str,
-            "SG_UF_NCM": str,
-            "CO_URF": str,
-            "CO_VIA": str,
-            "CO_ANO": str,
-            "CO_MES": str,
-            "QT_ESTAT": np.float64,
-            "KG_LIQUIDO": np.float64,
-            "VL_FOB": np.float64,
-        },
+        dtype=str,
     )
+    d.loc[:, "QT_ESTAT"] = d["QT_ESTAT"].apply(lambda x: np.float64(x))
+    d.loc[:, "KG_LIQUIDO"] = d["KG_LIQUIDO"].apply(lambda x: np.float64(x))
+    d.loc[:, "VL_FOB"] = d["VL_FOB"].apply(lambda x: np.float64(x))
 
     d = d.rename(columns={"CO_ANO": "year", "CO_MES": "month"})
     d = d.assign(day=1)
