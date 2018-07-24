@@ -34,8 +34,15 @@ URL_COMPLETE_BC_TABLES = [
     "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_COMPLETA.zip",  # Arquivo da série histórica de importações
 ]
 
+URL_COMPLETE_BC_MUN_TABLES = [
+    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/EXP_COMPLETA_MUN.zip",
+    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/IMP_COMPLETA_MUN.zip",
+]
+
 CANON_EXP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/EXP_{year}.csv"
 CANON_IMP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_{year}.csv"
+CANON_EXP_MUN = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/EXP_{year}_MUN.csv"
+CANON_IMP_MUN = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/IMP_{year}_MUN.csv"
 # Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-
 # comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
 
@@ -80,3 +87,13 @@ def exp(year):
 def imp(year):
     url = CANON_IMP.format(year=year)
     download(url, os.path.join(PATH_DATA, "imp"))
+
+
+def exp_mun(year):
+    url = CANON_EXP_MUN.format(year=year)
+    download(url, os.path.join(PATH_DATA, "exp_mun"))
+
+
+def imp_mun(year):
+    url = CANON_IMP_MUN.format(year=year)
+    download(url, os.path.join(PATH_DATA, "imp_mun"))

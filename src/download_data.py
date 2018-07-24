@@ -6,6 +6,7 @@ import download
 def set_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("years", action="store", nargs="+")
+    parser.add_argument("-mun", action="store_true")
 
     return parser
 
@@ -29,8 +30,12 @@ def main():
     args = expand_years(args.years)
 
     for y in args:
-        download.exp(y)
-        download.imp(y)
+        if args.mun:
+            download.exp_mun(y)
+            download.imp_mun(y)
+        else:
+            download.exp(y)
+            download.imp(y)
 
 
 if __name__ == '__main__':
