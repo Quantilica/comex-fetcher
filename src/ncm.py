@@ -1,42 +1,31 @@
 import pandas as pd
-import os
+import numpy as np
 
 
-DATA_DIR = os.path.join("..", "DATA")
-
-
-def open_ncm_file(filename):
+def open_file(filename):
     d = pd.read_csv(
         filename,
         sep=";",
         decimal=",",
         header=0,
         encoding="latin-1",
-        dtype=str
+        dtype=str,
     )
 
     return d
 
 
-def merge_ncm(ncm, path_folder):
-    files = [f for f in os.listdir(path_folder) if f.startswith("NCM_")]
-    for f in files:
-        d = open_ncm_file(os.path.join(path_folder, f))
-        ncm = pd.merge(ncm, d, how="left")
+def range_codes(ncm, code_start: str, code_end: str) -> np.ndarray:
+    if len(code_start) < 2:
+        raise
+    elif len(code_start) < 8:
+        code_start += "0" * (8 - len(code_start))
+    if len(code_end) < 2:
+        raise
+    elif len(code_end) < 8:
+        code_end += "9" * (8 - len(code_end))
+    codes = ncm.loc[
+        (ncm["CO_NCM"] >= code_start) & (ncm["CO_NCM"] <= code_end), "CO_NCM"
+    ]
 
-    return ncm
-
-
-def main():
-    ncm = open_ncm_file(os.path.join(DATA_DIR, "ncm", "NCM.csv"))
-    ncm = merge_ncm(ncm, "DATA")
-    ncm = ncm[[c for c in ncm
-               if (not c.endswith("_ESP")) and (not c.endswith("_ING"))
-               ]]
-    ncm_out = os.path.join(DATA_DIR, "ncm", "ncm_complete.xlsx")
-    print("Salvando arquivo:", ncm_out)
-    ncm.to_excel(ncm_out, index=False)
-
-
-if __name__ == '__main__':
-    main()
+    return codes.values

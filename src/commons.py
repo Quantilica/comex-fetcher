@@ -10,7 +10,7 @@ def open_ncm_file(filename):
         sep=";",
         decimal=",",
         header=0,
-        encoding="latin1",
+        encoding="latin-1",
         dtype=str
     )
 
@@ -46,7 +46,7 @@ def open_zip_mdic_data(filename):
     with zipfile.ZipFile(filename) as zf:
         with zf.open(zf.namelist()[0]) as zfc:
             d = pd.read_csv(
-                zfc, sep=";", decimal=",", header=0, encoding="latin1",
+                zfc, sep=";", decimal=",", header=0, encoding="latin-1",
                 dtype={
                     "CO_NCM": str,
                     "CO_UNID": str,
