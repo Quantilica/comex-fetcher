@@ -27,9 +27,9 @@ def expand_years(args):
 def main():
     parser = set_parser()
     args = parser.parse_args()
-    args = expand_years(args.years)
+    years = expand_years(args.years)
 
-    for y in args:
+    for y in years:
         if args.mun:
             download.exp_mun(y)
             download.imp_mun(y)
