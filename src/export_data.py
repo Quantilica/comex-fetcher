@@ -1,22 +1,25 @@
 import argparse
+import datetime
 import os
+import pandas as pd
 
 import bc
 import ncm
 
 
-PATH_DATA = os.path.join("..", "DATA")
-PATH_EXP = os.path.join(PATH_DATA, "exp")
-PATH_IMP = os.path.join(PATH_DATA, "imp")
-PATH_NCM = os.path.join(PATH_DATA, "ncm", "NCM.csv")
-NCM = ncm.open_file(PATH_NCM)
-
-
 def set_parser():
     parser = argparse.ArgumentParser()
+    # -ncm : list of codes or range of codes
     parser.add_argument("-ncm", action="store", nargs="+", required=True)
+    # -t : year period
     parser.add_argument("-t", action="store", nargs="+")
+    # -s : balance side (x for exports and m for imports)
     parser.add_argument("-s", action="store", choices=["x", "m"])
+    # -i : input path/filename
+    parser.add_argument(
+        "-i", action="store", default=os.path.join("\\", "DATA", "MDIC"))
+    # -o : output path/filename
+    parser.add_argument("-o", action="store", default="data.xlsx")
 
     return parser
 
@@ -34,12 +37,12 @@ def expand_years(list_years: list):
     return years
 
 
-def expand_codes(list_codes: list):
+def expand_codes(list_codes: list, ncm_data):
     codes = []
     for arg in list_codes:
         if ":" in arg:
             start, end = arg.split(":")
-            codes += list(ncm.range_codes(NCM, start, end))
+            codes += list(ncm.range_codes(ncm_data, start, end))
         else:
             codes.append(arg)
 
@@ -70,20 +73,36 @@ def main():
     parser = set_parser()
     args = parser.parse_args()
 
+    PATH_DATA = args.i
+    PATH_EXP = os.path.join(PATH_DATA, "exp")
+    PATH_IMP = os.path.join(PATH_DATA, "imp")
+    NCM = ncm.open_file(os.path.join(PATH_DATA, "ncm", "NCM.csv"))
+
     years = expand_years(args.t)
-    codes = expand_codes(args.ncm)
+    if years is None:
+        years = [datetime.datetime.today().year]
+
+    codes = expand_codes(args.ncm, NCM)
+
+    output_path = args.o
 
     if args.s is None:
         x = get_data(years, codes, PATH_EXP)
-        save_data(x, "x.xlsx")
+        x = x.assign(BALACE_SIDE="EXPORT")
         m = get_data(years, codes, PATH_IMP)
-        save_data(m, "m.xlsx")
+        m = m.assign(BALACE_SIDE="IMPORT")
+        data = pd.concat([x, m], axis=0, ignore_index=True)
     elif args.s == "x":
         x = get_data(years, codes, PATH_EXP)
-        save_data(x, "x.xlsx")
+        data = x.assign(BALACE_SIDE="EXPORT")
     elif args.s == "m":
         m = get_data(years, codes, PATH_IMP)
-        save_data(m, "m.xlsx")
+        data = m.assign(BALACE_SIDE="IMPORT")
+
+    if len(data) > 0:
+        save_data(data, output_path)
+    else:
+        print("No data for this query!")
 
     print("DONE!")
 
