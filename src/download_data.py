@@ -1,12 +1,18 @@
 import argparse
+import os
 
 import download
 
 
 def set_parser():
     parser = argparse.ArgumentParser()
+    # years : list or range of years to download data
     parser.add_argument("years", action="store", nargs="+")
+    # -mun : download municipalities data
     parser.add_argument("-mun", action="store_true")
+    # -o : output path
+    parser.add_argument(
+        "-o", action="store_true", default=os.path.join("\\", "DATA", "MDIC"))
 
     return parser
 
@@ -29,13 +35,15 @@ def main():
     args = parser.parse_args()
     years = expand_years(args.years)
 
+    output = args.o
+
     for y in years:
         if args.mun:
-            download.exp_mun(y)
-            download.imp_mun(y)
+            download.exp_mun(y, output)
+            download.imp_mun(y, output)
         else:
-            download.exp(y)
-            download.imp(y)
+            download.exp(y, output)
+            download.imp(y, output)
 
 
 if __name__ == '__main__':

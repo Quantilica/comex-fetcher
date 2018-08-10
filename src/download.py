@@ -47,8 +47,6 @@ CANON_IMP_MUN = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/IMP_{year}_M
 # Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-
 # comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
 
-PATH_DATA = os.path.join("..", "DATA")
-
 
 def download(url, path, retry=3, blocksize=1024):
     if not os.path.exists(path):
@@ -91,35 +89,35 @@ def download(url, path, retry=3, blocksize=1024):
             break
 
 
-def ncm(table="ncm"):
+def ncm(table, path):
     download(
         CANON_URL_NCM_TABLES.format(NCM_TABLES[table]),
-        os.path.join(PATH_DATA, "ncm"),
+        os.path.join(path, "ncm"),
     )
 
 
-def code(table):
+def code(table, path):
     download(
         CANON_URL_CODE_TABLES.format(CODE_TABLES[table]),
-        os.path.join(PATH_DATA, "code"),
+        os.path.join(path, "code"),
     )
 
 
-def exp(year):
+def exp(year, path):
     url = CANON_EXP.format(year=year)
-    download(url, os.path.join(PATH_DATA, "exp"))
+    download(url, os.path.join(path, "exp"))
 
 
-def imp(year):
+def imp(year, path):
     url = CANON_IMP.format(year=year)
-    download(url, os.path.join(PATH_DATA, "imp"))
+    download(url, os.path.join(path, "imp"))
 
 
-def exp_mun(year):
+def exp_mun(year, path):
     url = CANON_EXP_MUN.format(year=year)
-    download(url, os.path.join(PATH_DATA, "exp_mun"))
+    download(url, os.path.join(path, "exp_mun"))
 
 
-def imp_mun(year):
+def imp_mun(year, path):
     url = CANON_IMP_MUN.format(year=year)
-    download(url, os.path.join(PATH_DATA, "imp_mun"))
+    download(url, os.path.join(path, "imp_mun"))
