@@ -42,7 +42,6 @@ def open_mdic_file(filename):
 
 
 def open_zip_mdic_data(filename):
-    print("Abrindo arquivo:", filename)
     with zipfile.ZipFile(filename) as zf:
         with zf.open(zf.namelist()[0]) as zfc:
             d = pd.read_csv(
