@@ -3,7 +3,12 @@ import os
 import time
 
 
-CANON_URL_NCM_TABLES = "http://www.mdic.gov.br/balanca/bd/tabelas/NCM{}.csv"
+CANON_URL = "http://www.mdic.gov.br/balanca/bd/"
+
+# TABLES
+CANON_URL_TABLES = CANON_URL + "tabelas/"
+
+CANON_URL_NCM_TABLES = CANON_URL_TABLES + "NCM{}.csv"
 NCM_TABLES = {
     "ncm": "",
     "sh": "_SH",
@@ -17,8 +22,7 @@ NCM_TABLES = {
     "unidade": "_UNIDADE",
 }
 
-CANON_URL_CODE_TABLES = "http://www.mdic.gov.br/balanca/bd/tabelas/{}.csv"
-
+CANON_URL_CODE_TABLES = CANON_URL_TABLES + "{}.csv"
 CODE_TABLES = {
     "pais": "PAIS",
     "pais_bloco": "PAIS_BLOCO",
@@ -29,23 +33,26 @@ CODE_TABLES = {
     "urf": "URF"
 }
 
+
+# DATA
+CANON_URL_DATA = CANON_URL + "comexstat-bd/"
+
 URL_COMPLETE_BC_TABLES = [
     # Dados de séries históricas de importações e exportações
-    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/EXP_COMPLETA.zip",  # Arquivo da série histórica de exportações
-    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_COMPLETA.zip",  # Arquivo da série histórica de importações
+    CANON_URL_DATA + "ncm/EXP_COMPLETA.zip",
+    CANON_URL_DATA + "ncm/IMP_COMPLETA.zip",
 ]
 
 URL_COMPLETE_BC_MUN_TABLES = [
-    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/EXP_COMPLETA_MUN.zip",
-    "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/IMP_COMPLETA_MUN.zip",
+    CANON_URL_DATA + "mun/EXP_COMPLETA_MUN.zip",
+    CANON_URL_DATA + "mun/IMP_COMPLETA_MUN.zip",
 ]
 
-CANON_EXP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/EXP_{year}.csv"
-CANON_IMP = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/ncm/IMP_{year}.csv"
-CANON_EXP_MUN = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/EXP_{year}_MUN.csv"
-CANON_IMP_MUN = "http://www.mdic.gov.br/balanca/bd/comexstat-bd/mun/IMP_{year}_MUN.csv"
-# Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-
-# comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
+CANON_EXP = CANON_URL_DATA + "ncm/EXP_{year}.csv"
+CANON_IMP = CANON_URL_DATA + "ncm/IMP_{year}.csv"
+CANON_EXP_MUN = CANON_URL_DATA + "mun/EXP_{year}_MUN.csv"
+CANON_IMP_MUN = CANON_URL_DATA + "mun/IMP_{year}_MUN.csv"
+# Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
 
 
 def download(url, path, retry=3, blocksize=1024):
