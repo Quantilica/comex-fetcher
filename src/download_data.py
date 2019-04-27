@@ -12,7 +12,7 @@ def set_parser():
     parser.add_argument("-mun", action="store_true")
     # -o : output path
     parser.add_argument(
-        "-o", action="store_true", default=os.path.join("\\", "DATA", "MDIC"))
+        "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
 
     return parser
 
