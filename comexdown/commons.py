@@ -41,30 +41,6 @@ def open_mdic_file(filename):
     return d
 
 
-def open_zip_mdic_data(filename):
-    with zipfile.ZipFile(filename) as zf:
-        with zf.open(zf.namelist()[0]) as zfc:
-            d = pd.read_csv(
-                zfc, sep=";", decimal=",", header=0, encoding="latin-1",
-                dtype={
-                    "CO_NCM": str,
-                    "CO_UNID": str,
-                    "CO_SH6": str,
-                    "CO_PAIS": str,
-                    "CO_UF": str,
-                    "CO_PORTO": str,
-                    "CO_VIA": str,
-                    "CO_ANO": str,
-                    "CO_MES": str,
-                    "QT_ESTAT": np.float64,
-                    "KG_LIQUIDO": np.float64,
-                    "VL_FOB": np.float64,
-                }
-            )
-
-    return d
-
-
 def select(df, column, value):
     if type(value) is list:
         df = df.loc[df[column].isin(value)]
