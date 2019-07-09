@@ -62,14 +62,16 @@ def save_data(data, path):
 
 def set_parser():
     parser = argparse.ArgumentParser(description="Manage MDIC data.")
-    command_subparsers = parser.add_subparsers(dest="command")
+    command_subparsers = parser.add_subparsers(dest="command", required=True)
 
     # * DOWNLOAD MDIC DATA
-    download_subparser = command_subparsers.add_parser("download", "Download MDIC data.")
+    download_subparser = command_subparsers.add_parser(
+        "download", description="Download MDIC data.")
     download_subs = download_subparser.add_subparsers()
 
     # DOWNLOAD BC DATA
-    download_bc_parser = download_subs.add_parser("bc", description="Export & Import data.")
+    download_bc_parser = download_subs.add_parser(
+        "bc", description="Export & Import data.")
     # years : list or range of years to download data
     download_bc_parser.add_argument("years", action="store", nargs="+")
     # -mun : download municipalities data
@@ -80,14 +82,16 @@ def set_parser():
     download_bc_parser.set_defaults(func=download_bc)
 
     # DOWNLOAD CODE DATA
-    download_code_parser = download_subs.add_parser("code", description="Code data.")
+    download_code_parser = download_subs.add_parser(
+        "code", description="Code data.")
     download_code_parser.add_argument("tables", action="store", nargs="+")
     download_code_parser.add_argument(
         "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
     download_code_parser.set_defaults(func=download_code)
 
     # DOWNLOAD NCM DATA
-    download_ncm_parser = download_subs.add_parser("ncm", description="NCM data.")
+    download_ncm_parser = download_subs.add_parser(
+        "ncm", description="NCM data.")
     download_ncm_parser.add_argument("tables", action="store", nargs="+")
     download_ncm_parser.add_argument(
         "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
@@ -95,7 +99,8 @@ def set_parser():
 
 
     # * EXPORT MDIC DATA
-    export_parser = command_subparsers.add_parser("export", "Export MDIC data.")
+    export_parser = command_subparsers.add_parser(
+        "export", description="Export MDIC data.")
     # -ncm : list of codes or range of codes
     export_parser.add_argument("-ncm", action="store", nargs="+", required=True)
     # -t : year period
