@@ -3,8 +3,8 @@ import datetime
 import os
 import pandas as pd
 
-import bc
-import ncm
+from . import bc
+from . import ncm
 
 
 def set_parser():
