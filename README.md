@@ -1,4 +1,4 @@
-# [Estudo] Balança Comercial - Brasil
+# Balança Comercial - Brasil
 
 Este repositório contém scripts Python para baixar e manipular os dados da Balança Comercial brasileira divulgados pelo Ministério da Indústria, Comércio Exterior e Serviços (MDIC).
 
