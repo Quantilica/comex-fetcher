@@ -22,18 +22,30 @@ def download_bc(args):
 
 
 def download_code(args):
-    for table in args.tables:
-        download.code(table, args.o)
+    if "all" in args.tables:
+        for table in download.CODE_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.code(table, args.o)
 
 
 def download_ncm(args):
-    for table in args.tables:
-        download.ncm(table, args.o)
+    if "all" in args.tables:
+        for table in download.NCM_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.ncm(table, args.o)
 
 
 def download_nbm(args):
-    for table in args.tables:
-        download.nbm(table, args.o)
+    if "all" in args.tables:
+        for table in download.NBM_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.nbm(table, args.o)
 
 
 def expand_codes(list_codes: list, ncm_data):
