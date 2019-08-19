@@ -3,9 +3,9 @@ import datetime
 import os
 import pandas as pd
 
-from . import bc
-from . import ncm
-from . import download
+import bc
+import ncm
+import download
 
 
 def download_bc(args):
@@ -13,19 +13,39 @@ def download_bc(args):
         if args.mun:
             download.exp_mun(y, args.o)
             download.imp_mun(y, args.o)
+        elif args.nbm:
+            download.exp_nbm(y, args.o)
+            download.imp_nbm(y, args.o)
         else:
             download.exp(y, args.o)
             download.imp(y, args.o)
 
 
 def download_code(args):
-    for table in args.tables:
-        download.code(table, args.o)
+    if "all" in args.tables:
+        for table in download.CODE_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.code(table, args.o)
 
 
 def download_ncm(args):
-    for table in args.tables:
-        download.ncm(table, args.o)
+    if "all" in args.tables:
+        for table in download.NCM_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.ncm(table, args.o)
+
+
+def download_nbm(args):
+    if "all" in args.tables:
+        for table in download.NBM_TABLES:
+            download.code(table, args.o)
+    else:
+        for table in args.tables:
+            download.nbm(table, args.o)
 
 
 def expand_codes(list_codes: list, ncm_data):
@@ -76,6 +96,7 @@ def set_parser():
     download_bc_parser.add_argument("years", action="store", nargs="+")
     # -mun : download municipalities data
     download_bc_parser.add_argument("-mun", action="store_true")
+    download_bc_parser.add_argument("-nbm", action="store_true")
     # -o : output path
     download_bc_parser.add_argument(
         "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
@@ -96,6 +117,14 @@ def set_parser():
     download_ncm_parser.add_argument(
         "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
     download_ncm_parser.set_defaults(func=download_ncm)
+
+    # DOWNLOAD NBM DATA
+    download_nbm_parser = download_subs.add_parser(
+        "nbm", description="NBM data.")
+    download_nbm_parser.add_argument("tables", action="store", nargs="+")
+    download_nbm_parser.add_argument(
+        "-o", action="store", default=os.path.join("\\", "DATA", "MDIC"))
+    download_nbm_parser.set_defaults(func=download_nbm)
 
 
     # * EXPORT MDIC DATA

@@ -22,13 +22,18 @@ NCM_TABLES = {
     "unidade": "_UNIDADE",
 }
 
+CANON_URL_NBM_TABLES = CANON_URL_TABLES + "NBM{}.csv"
+NBM_TABLES = {
+    "nbm": "",
+    "ncm": "_NCM"
+}
+
 CANON_URL_CODE_TABLES = CANON_URL_TABLES + "{}.csv"
 CODE_TABLES = {
     "pais": "PAIS",
     "pais_bloco": "PAIS_BLOCO",
     "uf_mun": "UF_MUN",
     "uf": "UF",
-    "porto": "PORTO",
     "via": "VIA",
     "urf": "URF"
 }
@@ -52,6 +57,8 @@ CANON_EXP = CANON_URL_DATA + "ncm/EXP_{year}.csv"
 CANON_IMP = CANON_URL_DATA + "ncm/IMP_{year}.csv"
 CANON_EXP_MUN = CANON_URL_DATA + "mun/EXP_{year}_MUN.csv"
 CANON_IMP_MUN = CANON_URL_DATA + "mun/IMP_{year}_MUN.csv"
+CANON_EXP_NBM = CANON_URL_DATA + "nbm/EXP_{year}_NBM.csv"
+CANON_IMP_NBM = CANON_URL_DATA + "nbm/IMP_{year}_NBM.csv"
 # Fonte: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
 
 
@@ -103,6 +110,13 @@ def ncm(table, path):
     )
 
 
+def nbm(table, path):
+    download(
+        CANON_URL_NBM_TABLES.format(NBM_TABLES[table]),
+        os.path.join(path, "nbm"),
+    )
+
+
 def code(table, path):
     download(
         CANON_URL_CODE_TABLES.format(CODE_TABLES[table]),
@@ -128,3 +142,12 @@ def exp_mun(year, path):
 def imp_mun(year, path):
     url = CANON_IMP_MUN.format(year=year)
     download(url, os.path.join(path, "imp_mun"))
+
+def exp_nbm(year, path):
+    url = CANON_EXP_NBM.format(year=year)
+    download(url, os.path.join(path, "exp_nbm"))
+
+
+def imp_nbm(year, path):
+    url = CANON_IMP_NBM.format(year=year)
+    download(url, os.path.join(path, "imp_nbm"))
