@@ -33,7 +33,7 @@ def download_code(args):
 def download_ncm(args):
     if "all" in args.tables:
         for table in download.NCM_TABLES:
-            download.code(table, args.o)
+            download.ncm(table, args.o)
     else:
         for table in args.tables:
             download.ncm(table, args.o)
