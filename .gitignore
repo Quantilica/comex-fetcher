@@ -15,7 +15,8 @@
 .pdf
 
 # Folders
-plots
+.vscode
+.ipynb_checkpoints
 
 # Python
 __pycache__
