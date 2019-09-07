@@ -1,18 +1,18 @@
 
 # Image
-.png
-.jpg
+*.png
+*.jpg
 
 # Data
-.xls
-.xlsx
-.zip
-.csv
+*.xls
+*.xlsx
+*.zip
+*.csv
 
 # Docs
-.doc
-.docx
-.pdf
+*.doc
+*.docx
+*.pdf
 
 # Folders
 .vscode
@@ -20,8 +20,9 @@
 
 # Python
 __pycache__
-.pyc
-.pyo
+*.pyc
+*.pyo
+*.egg-info
 
 # Scripts
-.bat
+*.bat
