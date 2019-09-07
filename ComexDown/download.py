@@ -12,10 +12,8 @@ CANON_URL_NCM_TABLES = CANON_URL_TABLES + "NCM{}.csv"
 NCM_TABLES = {
     "ncm": "",
     "sh": "_SH",
-    "cuci": "_CUCI",
     "cgce": "_CGCE",
-    "isic": "_ISIC",
-    "siit": "_SIIT",
+    "isic": "_ISIC_CUCI",
     "fat_agreg": "_FAT_AGREG",
     "ppe": "_PPE",
     "ppi": "_PPI",
