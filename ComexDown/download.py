@@ -1,6 +1,7 @@
 from urllib import request
 import os
 import time
+import sys
 
 
 CANON_URL = "http://www.mdic.gov.br/balanca/bd/"
@@ -66,7 +67,8 @@ def download(url, path, retry=3, blocksize=1024):
 
     filename = os.path.join(path, url.rsplit("/", maxsplit=1)[1])
     for x in range(retry):
-        print(f"Baixando arquivo: {url:<50} --> {filename}")
+        sys.stdout.write(f"Baixando arquivo: {url:<50} --> {filename}\n")
+        sys.stdout.flush()
         try:
             resp = request.urlopen(url)
             length = resp.getheader("content-length")
@@ -88,16 +90,20 @@ def download(url, path, retry=3, blocksize=1024):
                     else:
                         size_txt = "{: >9.2f} KiB".format(size / 2**10)
                     if length:
-                        print(f"{bar} {p*100: >5.1f}% {size_txt}\r", end="")
+                        sys.stdout.write(
+                            f"{bar} {p*100: >5.1f}% {size_txt}\r")
+                        sys.stdout.flush()
 
         except Exception as e:
-            print("\nErro...", e)
+            sys.stdout.write(f"\nErro... {e}")
+            sys.stdout.flush()
             time.sleep(3)
             if x == retry - 1:
                 raise
 
         else:
-            print("\n")
+            sys.stdout.write("\n")
+            sys.stdout.flush()
             break
 
 
