@@ -14,7 +14,6 @@ NCM_TABLES = {
     "ncm": "",
     "sh": "_SH",
     "cgce": "_CGCE",
-    "isic": "_ISIC_CUCI",
     "fat_agreg": "_FAT_AGREG",
     "ppe": "_PPE",
     "ppi": "_PPI",
@@ -29,6 +28,7 @@ NBM_TABLES = {
 
 CANON_URL_CODE_TABLES = CANON_URL_TABLES + "{}.csv"
 CODE_TABLES = {
+    "isic_cuci": "ISIC_CUCI",
     "pais": "PAIS",
     "pais_bloco": "PAIS_BLOCO",
     "uf_mun": "UF_MUN",
