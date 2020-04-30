@@ -5,4 +5,4 @@ from .download import (
 
 __author__ = "Daniel K. Komesu"
 __author_email__ = "danielkomesu@gmail.com"
-__version__ = "0.8"
+__version__ = "0.9"
