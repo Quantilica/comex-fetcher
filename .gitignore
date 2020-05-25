@@ -1,4 +1,3 @@
-
 # Image
 *.png
 *.jpg
@@ -14,15 +13,10 @@
 *.docx
 *.pdf
 
-# Folders
-.vscode
-.ipynb_checkpoints
-
 # Python
 __pycache__
 *.pyc
 *.pyo
 *.egg-info
-
-# Scripts
-*.bat
+build
+dist
