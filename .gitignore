@@ -18,5 +18,9 @@ __pycache__
 *.pyc
 *.pyo
 *.egg-info
+.eggs
 build
 dist
+
+# Coverage
+.coverage
