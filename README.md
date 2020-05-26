@@ -1,14 +1,16 @@
 # comexdown: Brazil's foreign trade data downloader
 
+![Travis (.org)](https://img.shields.io/travis/dkkomesu/comexdown?style=flat-square) ![Coveralls github](https://img.shields.io/coveralls/github/dkkomesu/comexdown?style=flat-square) ![GitHub](https://img.shields.io/github/license/dkkomesu/comexdown?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comexdown?style=flat-square)
+
 This package contains functions to download brazilian foreign trade data
-published by [Ministério da Economia(ME)/Secretaria de Comércio Exterior (SCE)][1].
+published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][1].
 
 ## Installation
 
+`comexdown` package is available on PyPI, so just use `pip`!
+
 ```sh
-git clone https://github.com/dkkomesu/comexdown.git
-cd comexdown
-pip setup.py install
+pip install comexdown
 ```
 
 ## Usage
