@@ -7,7 +7,7 @@ name = "comexdown"
 description = "A little utility to download Brazil's foreign trade data"
 with open("README.md", "r") as fh:
     long_description = fh.read()
-url = "https://github.com/dkkomesu/comexdown"
+url = "https://github.com/dankkom/comexdown"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
