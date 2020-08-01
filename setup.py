@@ -1,15 +1,33 @@
+import codecs
+import os.path
 import setuptools
 
-import comexdown
+
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 
 name = "comexdown"
+version = get_version(os.path.join("comexdown", "__init__.py"))
+author = "Daniel Komesu"
+author_email = "contact@dkko.me"
 description = "A little utility to download Brazil's foreign trade data"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 url = "https://github.com/dankkom/comexdown"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
@@ -25,9 +43,9 @@ entry_points = {
 
 setuptools.setup(
     name=name,
-    version=comexdown.__version__,
-    author=comexdown.__author__,
-    author_email=comexdown.__author_email__,
+    version=version,
+    author=author,
+    author_email=author_email,
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
