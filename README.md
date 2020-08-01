@@ -1,6 +1,6 @@
 # comexdown: Brazil's foreign trade data downloader
 
-![Travis (.org)](https://img.shields.io/travis/dkkomesu/comexdown?style=flat-square) ![Coveralls github](https://img.shields.io/coveralls/github/dkkomesu/comexdown?style=flat-square) ![GitHub](https://img.shields.io/github/license/dkkomesu/comexdown?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comexdown?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/dankkom/comexdown/tests?style=flat-square) ![Coveralls github](https://img.shields.io/coveralls/github/dankkom/comexdown?style=flat-square) ![GitHub](https://img.shields.io/github/license/dankkom/comexdown?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comexdown?style=flat-square)
 
 This package contains functions to download brazilian foreign trade data
 published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][1].
