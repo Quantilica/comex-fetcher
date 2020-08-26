@@ -4,6 +4,19 @@ from unittest import mock
 from comexdown import download
 
 
+class TestDownloadFile(unittest.TestCase):
+
+    @mock.patch("comexdown.download.sys")
+    @mock.patch("comexdown.download.request")
+    @mock.mock_open()
+    def test_download_file(self, mock_open, mock_request, mock_sys):
+        download.download_file("http://www.example.com/file.csv", "DATA")
+        mock_open.assert_called()
+        mock_sys.stdout.write.assert_called()
+        mock_sys.stdout.flush.assert_called()
+        mock_request.urlopen.assert_called()
+
+
 @mock.patch("comexdown.download.download_file")
 class TestDownload(unittest.TestCase):
 
