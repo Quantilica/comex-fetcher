@@ -3,11 +3,9 @@
 
 import os
 
-from . import download
+from comexdown import download
 
 
-__author__ = "Daniel K. Komesu"
-__author_email__ = "danielkomesu@gmail.com"
 __version__ = "1.0"
 
 
