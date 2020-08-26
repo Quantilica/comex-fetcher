@@ -4,8 +4,8 @@
 import argparse
 import os
 
-from . import get_year, get_year_nbm, get_complete, get_table
-from .download import AUX_TABLES, TABLES
+from comexdown import get_year, get_year_nbm, get_complete, get_table
+from comexdown.tables import AUX_TABLES, TABLES
 
 
 def expand_years(args_years):

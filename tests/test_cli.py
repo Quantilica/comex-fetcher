@@ -5,7 +5,7 @@ import unittest
 from unittest import mock
 
 from comexdown import cli
-from comexdown import download as d
+from comexdown.tables import AUX_TABLES
 
 
 class TestCliFunctions(unittest.TestCase):
@@ -185,11 +185,11 @@ class TestCliDownloadCode(unittest.TestCase):
         )
         self.args.func(self.args)
         mock_get_table.assert_called()
-        self.assertEqual(mock_get_table.call_count, len(d.AUX_TABLES))
+        self.assertEqual(mock_get_table.call_count, len(AUX_TABLES))
 
     @mock.patch("comexdown.cli.get_table")
     def test_download_table(self, mock_get_table):
-        for table_name in d.AUX_TABLES:
+        for table_name in AUX_TABLES:
             self.args = self.parser.parse_args(
                 [
                     "download",
