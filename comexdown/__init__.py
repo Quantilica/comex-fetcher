@@ -9,11 +9,13 @@ __version__ = "1.1"
 
 
 # -----------------------------------DOWNLOAD-----------------------------------
-def get_year(year, exp=False, imp=False, mun=False, path=None):
+def get_year(path, year, exp=False, imp=False, mun=False):
     """Download trade data
 
     Parameters
     ----------
+    path : str
+        Destination path to save downloaded data, by default None
     year : int
         Year to download
     exp : bool, optional
@@ -22,74 +24,70 @@ def get_year(year, exp=False, imp=False, mun=False, path=None):
         If True, download imports data, by default False
     mun : bool, optional
         If True, download municipality data, by default False
-    path : str, optional
-        Destination path to save downloaded data, by default None
     """
-    dd = fs.DataDirectory(root=path)
     if mun:
         if exp:
             download.exp_mun(
                 year=year,
-                path=dd.path_trade(direction="exp", year=year, mun=True),
+                path=fs.path_trade(root=path, direction="exp", year=year, mun=True),
             )
         if imp:
             download.imp_mun(
                 year=year,
-                path=dd.path_trade(direction="imp", year=year, mun=True),
+                path=fs.path_trade(root=path, direction="imp", year=year, mun=True),
             )
     else:
         if exp:
             download.exp(
                 year=year,
-                path=dd.path_trade(direction="exp", year=year, mun=False),
+                path=fs.path_trade(root=path, direction="exp", year=year, mun=False),
             )
         if imp:
             download.imp(
                 year=year,
-                path=dd.path_trade(direction="imp", year=year, mun=False),
+                path=fs.path_trade(root=path, direction="imp", year=year, mun=False),
             )
 
 
-def get_year_nbm(year, exp=False, imp=False, path=None):
+def get_year_nbm(path, year, exp=False, imp=False):
     """Download older trade data
 
     Parameters
     ----------
+    path : str
+        Destination path to save downloaded data, by default None
     year : int
         Year to download
     exp : bool, optional
         If True, download export data, by default False
     imp : bool, optional
         If True, download import data, by default False
-    path : str, optional
-        Destination path to save downloaded data, by default None
     """
-    dd = fs.DataDirectory(root=path)
     if exp:
         download.exp_nbm(
             year=year,
-            path=dd.path_trade_nbm(direction="exp", year=year),
+            path=fs.path_trade_nbm(root=path, direction="exp", year=year),
         )
     if imp:
         download.imp_nbm(
             year=year,
-            path=dd.path_trade_nbm(direction="imp", year=year),
+            path=fs.path_trade_nbm(root=path, direction="imp", year=year),
         )
 
 
-def get_complete(exp=False, imp=False, mun=False, path="."):
+def get_complete(path, exp=False, imp=False, mun=False):
     """Download complete trade data
 
     Parameters
     ----------
+    path : str
+        Destination path to save downloaded data, by default "."
     exp : bool, optional
         If True, download complete export data, by default False
     imp : bool, optional
         If True, download complete import data, by default False
     mun : bool, optional
         If True, download complete municipality trade data, by default False
-    path : str, optional
-        Destination path to save downloaded data, by default "."
     """
     if mun:
         if exp:
@@ -103,18 +101,17 @@ def get_complete(exp=False, imp=False, mun=False, path="."):
             download.imp_complete(path)
 
 
-def get_table(table, path=None):
+def get_table(path, table):
     """Download auxiliary code tables
 
     Parameters
     ----------
+    path : str
+        Destination path to save downloaded code table
     table : str
         Name of auxiliary code table to download
-    path : str, optional
-        Destination path to save downloaded code table, by default "."
     """
-    dd = fs.DataDirectory(root=path)
     download.table(
         table_name=table,
-        path=dd.path_aux(name=table),
+        path=fs.path_aux(root=path, name=table),
     )
