@@ -21,6 +21,13 @@ __pycache__
 .eggs
 build
 dist
+Pipfile.lock
 
-# Coverage
+# Tests tools
 .coverage
+.pytest_cache
+.tox
+htmlcov
+
+# Editor configuration files
+.vscode

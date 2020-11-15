@@ -77,7 +77,7 @@ class TestCliDownloadTrade(unittest.TestCase):
             if args.mun:
                 mutable.append("-mun")
             self.args = self.parser.parse_args(
-                ["download", "trade", "2010"] + mutable + ["-o", self.o]
+                ["trade", "2010"] + mutable + ["-o", self.o]
             )
             self.args.func(self.args)
             mock_get_year.assert_called_with(
@@ -89,7 +89,7 @@ class TestCliDownloadTrade(unittest.TestCase):
             )
 
         self.args = self.parser.parse_args(
-            ["download", "trade", "2010", "-o", self.o]
+            ["trade", "2010", "-o", self.o]
         )
         self.args.func(self.args)
         mock_get_year.assert_called_with(
@@ -101,7 +101,7 @@ class TestCliDownloadTrade(unittest.TestCase):
         )
 
         self.args = self.parser.parse_args(
-            ["download", "trade", "2010", "-mun", "-o", self.o]
+            ["trade", "2010", "-mun", "-o", self.o]
         )
         self.args.func(self.args)
         mock_get_year.assert_called_with(
@@ -133,7 +133,7 @@ class TestCliDownloadTrade(unittest.TestCase):
             if args.mun:
                 mutable.append("-mun")
             self.args = self.parser.parse_args(
-                ["download", "trade", "complete"] + mutable + ["-o", self.o]
+                ["trade", "complete"] + mutable + ["-o", self.o]
             )
             self.args.func(self.args)
             mock_get_complete.assert_called_with(
@@ -144,7 +144,7 @@ class TestCliDownloadTrade(unittest.TestCase):
             )
 
         self.args = self.parser.parse_args(
-            ["download", "trade", "complete", "-o", self.o]
+            ["trade", "complete", "-o", self.o]
         )
         self.args.func(self.args)
         mock_get_complete.assert_called_with(
@@ -155,7 +155,7 @@ class TestCliDownloadTrade(unittest.TestCase):
         )
 
         self.args = self.parser.parse_args(
-            ["download", "trade", "complete", "-mun", "-o", self.o]
+            ["trade", "complete", "-mun", "-o", self.o]
         )
         self.args.func(self.args)
         mock_get_complete.assert_called_with(
@@ -176,7 +176,6 @@ class TestCliDownloadCode(unittest.TestCase):
     def test_download_table_all(self, mock_get_table):
         self.args = self.parser.parse_args(
             [
-                "download",
                 "table",
                 "all",
                 "-o",
@@ -192,7 +191,6 @@ class TestCliDownloadCode(unittest.TestCase):
         for table_name in AUX_TABLES:
             self.args = self.parser.parse_args(
                 [
-                    "download",
                     "table",
                     table_name,
                     "-o",
@@ -209,7 +207,6 @@ class TestCliDownloadCode(unittest.TestCase):
     def test_download_table_print_code_tables(self, mock_print_code_tables):
         self.args = self.parser.parse_args(
             [
-                "download",
                 "table",
             ]
         )

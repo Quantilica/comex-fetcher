@@ -50,8 +50,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=url,
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["tests"]),
     classifiers=classifiers,
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     entry_points=entry_points,
 )

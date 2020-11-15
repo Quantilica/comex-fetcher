@@ -1,13 +1,12 @@
 """Functions to download trade data and code tables"""
 
 
-from urllib import error, request
 import os
-import time
 import sys
+import time
+from urllib import error, request
 
 from comexdown.tables import AUX_TABLES
-
 
 CANON_URL = "http://www.mdic.gov.br/balanca/bd/"
 

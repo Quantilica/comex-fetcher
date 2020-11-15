@@ -1,14 +1,11 @@
 """Brazil's foreign trade data downloader"""
 
 
-from comexdown import download
-from comexdown import fs
-
+from comexdown import download, fs
 
 __version__ = "1.1"
 
 
-# -----------------------------------DOWNLOAD-----------------------------------
 def get_year(path, year, exp=False, imp=False, mun=False):
     """Download trade data
 
@@ -29,23 +26,43 @@ def get_year(path, year, exp=False, imp=False, mun=False):
         if exp:
             download.exp_mun(
                 year=year,
-                path=fs.path_trade(root=path, direction="exp", year=year, mun=True),
+                path=fs.path_trade(
+                    root=path,
+                    direction="exp",
+                    year=year,
+                    mun=True,
+                ),
             )
         if imp:
             download.imp_mun(
                 year=year,
-                path=fs.path_trade(root=path, direction="imp", year=year, mun=True),
+                path=fs.path_trade(
+                    root=path,
+                    direction="imp",
+                    year=year,
+                    mun=True,
+                ),
             )
     else:
         if exp:
             download.exp(
                 year=year,
-                path=fs.path_trade(root=path, direction="exp", year=year, mun=False),
+                path=fs.path_trade(
+                    root=path,
+                    direction="exp",
+                    year=year,
+                    mun=False,
+                ),
             )
         if imp:
             download.imp(
                 year=year,
-                path=fs.path_trade(root=path, direction="imp", year=year, mun=False),
+                path=fs.path_trade(
+                    root=path,
+                    direction="imp",
+                    year=year,
+                    mun=False,
+                ),
             )
 
 

@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 
+"""usage: comexdown { trade | table } <arguments>
+
+  comexdown trade <year> ... -o <output>
+
+  comexdown table <table name> -o <output>
+
+"""
+
 
 import argparse
 import os
 
-from comexdown import get_year, get_year_nbm, get_complete, get_table
+from comexdown import get_complete, get_table, get_year, get_year_nbm
 from comexdown.tables import AUX_TABLES, TABLES
 
 
@@ -23,9 +31,9 @@ def expand_years(args_years):
     return years
 
 
-# ==============================================================================
-# ----------------------------TRANSACTION TRADE DATA----------------------------
-# ==============================================================================
+# =============================================================================
+# ----------------------------TRANSACTION TRADE DATA---------------------------
+# =============================================================================
 def download_trade(args):
     if not args.exp and not args.imp:
         exp = imp = True
@@ -50,7 +58,7 @@ def download_trade(args):
         if year < 1997:
             if mun:
                 print(
-                    f"Municipality data for this year ({year}) isn't available!"
+                    f"Municipality data for this year ({year}) not available!"
                     "\nDownloading national data instead..."
                 )
             get_year_nbm(
@@ -69,9 +77,9 @@ def download_trade(args):
             )
 
 
-# ==============================================================================
-# ----------------------------AUXILIARY CODE TABLES-----------------------------
-# ==============================================================================
+# =============================================================================
+# ----------------------------AUXILIARY CODE TABLES----------------------------
+# =============================================================================
 def download_tables(args):
     if args.tables == []:
         print_code_tables()
@@ -113,16 +121,12 @@ def print_code_tables():
 
 
 def download_help(args):
-    print("\nhelp for sub-command:  comexdown download\n\n"
-          "available arguments:\n\n"
-          "  trade: download trade data\n"
-          "  table: download auxiliary code table\n"
-    )
+    print(__doc__)
 
 
-# ==============================================================================
-# ------------------------------------PARSERS-----------------------------------
-# ==============================================================================
+# =============================================================================
+# ------------------------------------PARSERS----------------------------------
+# =============================================================================
 def set_download_trade_subparser(download_subs, default_output):
     # !!! DOWNLOAD TRADE TRANSACTIONS DATA
     download_trade_parser = download_subs.add_parser(
@@ -175,22 +179,13 @@ def set_parser():
     default_output = os.path.join(".", "DATA", "MDIC")
 
     parser = argparse.ArgumentParser(
-        description="Easy access to Brazil's foreign trade data")
-    command_subparsers = parser.add_subparsers(
-        dest="command",
-        required=True,
-    )
+        description="Download Brazil's foreign trade data")
+    parser.set_defaults(func=download_help)
 
-    # * DOWNLOAD DATA
-    download_subparser = command_subparsers.add_parser(
-        "download",
-        description="Download Brazil's foreign trade data",
-    )
-    download_subparser.set_defaults(func=download_help)
-    download_subs = download_subparser.add_subparsers()
+    subparsers = parser.add_subparsers()
 
-    set_download_trade_subparser(download_subs, default_output)
-    set_download_table_subparser(download_subs, default_output)
+    set_download_trade_subparser(subparsers, default_output)
+    set_download_table_subparser(subparsers, default_output)
 
     return parser
 
