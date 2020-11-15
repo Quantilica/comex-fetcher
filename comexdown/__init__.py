@@ -3,7 +3,7 @@
 
 from comexdown import download, fs
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 
 def get_year(path, year, exp=False, imp=False, mun=False):
