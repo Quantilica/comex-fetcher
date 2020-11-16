@@ -12,6 +12,7 @@ pytest-cov = "*"
 tox = "*"
 isort = "*"
 flake8 = "*"
+twine = "*"
 
 [packages]
 comexdown = {editable = true, path = "."}
