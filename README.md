@@ -9,7 +9,7 @@ published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][
 
 `comexdown` package is available on PyPI, so just use `pip`!
 
-```sh
+```shell
 pip install comexdown
 ```
 
@@ -32,16 +32,34 @@ Download data on Brazilian foreign trade transactions (Exports / Imports).
 You can specify a range of years to download at once.
 
 ```
-comexdown download trade 2008:2019 -o "./DATA"
+comexdown trade 2008:2019 -o "./DATA"
 ```
 
 Download code tables.
 
 ```shell
-comexdown download code all  # Download all related code files
-comexdown download code uf   # Download only the UF.csv file
-comexdown download ncm_cgce  # Download only the NCM_CGCE.csv file
-comexdown download nbm_ncm   # Download only the NBM_NCM.csv file
+comexdown table all       # Download all related code files
+comexdown table uf        # Download only the UF.csv file
+comexdown table ncm_cgce  # Download only the NCM_CGCE.csv file
+comexdown table nbm_ncm   # Download only the NBM_NCM.csv file
+```
+
+## Development
+
+To setup a development environment clone this repository and install the required packages:
+
+```shell
+git clone https://github.com/dankkom/comexdown.git
+cd comexdown
+pipenv install --dev  # Requires Python 3.9
+```
+
+### Run tests
+
+To run the tests suite, use the following command:
+
+```shell
+pytest --cov=comexdown --cov-report term-missing --cov-report html tests/
 ```
 
 [1]: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
