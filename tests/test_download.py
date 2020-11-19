@@ -90,6 +90,14 @@ class TestDownload(unittest.TestCase):
             ".\\DATA",
         )
 
+    def test_agronegocio(self, mock_download):
+        download.agronegocio(".\\DATA")
+        mock_download.assert_called_with(
+            "https://github.com/dankkom/ncm-agronegocio/raw"
+            "/master/ncm-agronegocio.csv",
+            ".\\DATA",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

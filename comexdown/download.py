@@ -6,7 +6,7 @@ import sys
 import time
 from urllib import error, request
 
-from comexdown.tables import AUX_TABLES
+from comexdown.tables import AUX_TABLES, TABLES
 
 CANON_URL = "http://www.mdic.gov.br/balanca/bd/"
 
@@ -217,4 +217,17 @@ def imp_mun_complete(path):
 
     """
     url = CANON_URL + "comexstat-bd/mun/IMP_COMPLETA_MUN.zip"
+    download_file(url, path)
+
+
+def agronegocio(path):
+    """Downloads agronegocio file
+
+    Parameters
+    ----------
+    path : str
+        Destination path directory to save file
+
+    """
+    url = TABLES["agronegocio"]["url"]
     download_file(url, path)

@@ -128,6 +128,11 @@ def get_table(path, table):
     table : str
         Name of auxiliary code table to download
     """
+    if table == "agronegocio":
+        download.agronegocio(
+            path=fs.path_aux(root=path, name=table),
+        )
+        return
     download.table(
         table_name=table,
         path=fs.path_aux(root=path, name=table),

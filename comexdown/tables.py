@@ -166,6 +166,16 @@ TABLES = {
         "pkey": [],
         "name": "NBMxNCM - Tabela de conversão",
     },
+    "agronegocio": {
+        "description": "Tabela com códigos NCM do agronegócio brasileiro.",
+        "file_ref": "ncm-agronegocio.csv",
+        "pkey": ["CO_NCM"],
+        "name": "NCM Agronegócio",
+        "url": (
+            "https://github.com/dankkom/ncm-agronegocio/raw"
+            "/master/ncm-agronegocio.csv"
+        ),
+    },
 }
 
 AUX_TABLES = {
