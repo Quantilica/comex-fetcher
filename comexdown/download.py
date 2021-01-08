@@ -8,7 +8,7 @@ from urllib import error, request
 
 from comexdown.tables import AUX_TABLES, TABLES
 
-CANON_URL = "http://www.mdic.gov.br/balanca/bd/"
+CANON_URL = "https://balanca.economia.gov.br/balanca/bd/"
 
 
 def download_file(url, filepath=None, retry=3, blocksize=1024):

@@ -62,4 +62,4 @@ To run the tests suite, use the following command:
 pytest --cov=comexdown --cov-report term-missing --cov-report html tests/
 ```
 
-[1]: http://www.mdic.gov.br/index.php/comercio-exterior/estatisticas-de-comercio-exterior/base-de-dados-do-comercio-exterior-brasileiro-arquivos-para-download
+[1]: https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta
