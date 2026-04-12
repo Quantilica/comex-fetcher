@@ -2,17 +2,19 @@
 
 from pathlib import Path
 
-from comexdown import download, storage, urls
+import requests
+
+from . import download, storage, urls
 
 __version__ = "1.5.2"
 
 
-def get_year(path: Path, year: int, exp=False, imp=False, mun=False):
+def get_year(data_dir: Path, year: int, exp=False, imp=False, mun=False):
     """Download trade data
 
     Parameters
     ----------
-    path : Path
+    data_dir : Path
         Destination path to save downloaded data.
     year : int
         Year to download
@@ -29,23 +31,21 @@ def get_year(path: Path, year: int, exp=False, imp=False, mun=False):
     if imp:
         directions.append("imp")
 
-    for direction in directions:
-        url = urls.trade(direction=direction, year=year, mun=mun)
-        file_path = storage.path_trade(
-            root=path,
-            direction=direction,
-            year=year,
-            mun=mun,
-        )
-        download.download_file(url, file_path)
+    repo = storage.DataRepository(root=data_dir)
+
+    with requests.Session() as client:
+        for direction in directions:
+            url = urls.trade(direction=direction, year=year, mun=mun)
+            file_path = repo.path_trade(direction=direction, year=year, mun=mun)
+            download.download_file(url, file_path, client=client)
 
 
-def get_year_nbm(path: Path, year: int, exp=False, imp=False):
+def get_year_nbm(data_dir: Path, year: int, exp=False, imp=False):
     """Download older trade data (NBM)
 
     Parameters
     ----------
-    path : Path
+    data_dir : Path
         Destination path to save downloaded data.
     year : int
         Year to download
@@ -60,22 +60,21 @@ def get_year_nbm(path: Path, year: int, exp=False, imp=False):
     if imp:
         directions.append("imp")
 
-    for direction in directions:
-        url = urls.trade(direction=direction, year=year, nbm=True)
-        file_path = storage.path_trade_nbm(
-            root=path,
-            direction=direction,
-            year=year,
-        )
-        download.download_file(url, file_path)
+    repo = storage.DataRepository(root=data_dir)
+
+    with requests.Session() as client:
+        for direction in directions:
+            url = urls.trade(direction=direction, year=year, nbm=True)
+            file_path = repo.path_trade_nbm(direction=direction, year=year)
+            download.download_file(url, file_path, client=client)
 
 
-def get_complete(path: Path, exp=False, imp=False, mun=False):
+def get_complete(data_dir: Path, exp=False, imp=False, mun=False):
     """Download complete trade data
 
     Parameters
     ----------
-    path : Path
+    data_dir : Path
         Destination path to save downloaded data.
     exp : bool, optional
         If True, download complete export data.
@@ -90,39 +89,27 @@ def get_complete(path: Path, exp=False, imp=False, mun=False):
     if imp:
         directions.append("imp")
 
-    for direction in directions:
-        url = urls.complete(direction=direction, mun=mun)
-        # Note: 'complete' files might have different naming conventions
-        # The original code relied on download.exp_complete which hardcoded the
-        # filename.
-        # fs.path_trade generates paths like .../exp/EXP_2020.csv, which isn't
-        # right for complete zip files.
-        # We need to handle the output path for complete files.
-        # The original code did: path / filename (where filename is separate).
-        # We need to replicate that logic or add it to fs.py.
-        # Let's simple determine the filename from the URL for now as the
-        # original did.
-        filename = url.split("/")[-1]
-        file_path = path / filename
+    repo = storage.DataRepository(root=data_dir)
 
-        # Original code for complete files saved directly to `path` (or `path`
-        # was a directory).
-        # The original implementation for complete files:
-        # `filepath = path / filename`.
-        # So we expect `path` to be a directory.
-        download.download_file(url, file_path)
+    with requests.Session() as client:
+        for direction in directions:
+            url = urls.complete(direction=direction, mun=mun)
+            file_path = repo.path_trade_completa(direction=direction, mun=mun)
+            download.download_file(url, file_path, client=client)
 
 
-def get_table(path: Path, table: str):
+def get_table(data_dir: Path, table: str):
     """Download auxiliary code tables
 
     Parameters
     ----------
-    path : Path
+    data_dir : Path
         Destination path to save downloaded code table directory.
     table : str
         Name of auxiliary code table to download
     """
     url = urls.table(table)
-    file_path = storage.path_aux(root=path, name=table)
-    download.download_file(url, file_path)
+    repo = storage.DataRepository(root=data_dir)
+    file_path = repo.path_aux(name=table)
+    with requests.Session() as client:
+        download.download_file(url, file_path, client=client)

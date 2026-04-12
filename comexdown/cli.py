@@ -28,7 +28,6 @@ Examples:
         $ comexdown table ncm
 """
 
-
 import argparse
 from pathlib import Path
 
@@ -119,7 +118,7 @@ def download_trade(args: argparse.Namespace):
             exp=exp,
             imp=imp,
             mun=mun,
-            path=args.path,
+            data_dir=args.path,
         )
         return
 
@@ -137,7 +136,7 @@ def download_trade(args: argparse.Namespace):
                 year=year,
                 exp=exp,
                 imp=imp,
-                path=args.path,
+                data_dir=args.path,
             )
         else:
             get_year(
@@ -145,7 +144,7 @@ def download_trade(args: argparse.Namespace):
                 exp=exp,
                 imp=imp,
                 mun=mun,
-                path=args.path,
+                data_dir=args.path,
             )
 
 
@@ -163,29 +162,11 @@ def download_tables(args: argparse.Namespace):
     ----------
     args : argparse.Namespace
         Command-line arguments containing:
-        - tables: List of table names to download (or 'all' for all tables)
         - path: Output directory path for downloaded tables
-
-    Notes
-    -----
-    - If no table names are provided, prints available tables and exits
-    - Special value 'all' downloads all available auxiliary tables
-    - Tables are saved in an 'auxiliary-tables' subdirectory
     """
-    if args.tables == []:
-        print_code_tables()
-    if "all" in args.tables:
-        for table in AUX_TABLES:
-            get_table(
-                table=table,
-                path=args.path,
-            )
-        return
-    for table in args.tables:
-        get_table(
-            table=table,
-            path=args.path,
-        )
+    print_code_tables()
+    for table in AUX_TABLES:
+        get_table(data_dir=args.path, table=table)
 
 
 def print_code_tables():
@@ -237,7 +218,7 @@ def download_help(args: argparse.Namespace):
 # ------------------------------------PARSERS----------------------------------
 # =============================================================================
 def set_download_trade_subparser(
-    download_subs: argparse.ArgumentParser,
+    download_subs: argparse._SubParsersAction,
     default_output: Path,
 ):
     """Configure the 'trade' subcommand parser.
@@ -247,7 +228,7 @@ def set_download_trade_subparser(
 
     Parameters
     ----------
-    download_subs : argparse.ArgumentParser
+    download_subs : argparse._SubParsersAction
         Subparser collection to add the trade subcommand to.
     default_output : Path
         Default output directory path for downloaded files.
@@ -264,7 +245,8 @@ def set_download_trade_subparser(
     """
     # !!! DOWNLOAD TRADE TRANSACTIONS DATA
     download_trade_parser = download_subs.add_parser(
-        "trade", description="Download Exports & Imports data")
+        "trade", description="Download Exports & Imports data"
+    )
     download_trade_parser.add_argument(
         "years",
         action="store",
@@ -287,7 +269,7 @@ def set_download_trade_subparser(
 
 
 def set_download_table_subparser(
-    download_subs: argparse.ArgumentParser,
+    download_subs: argparse._SubParsersAction,
     default_output: Path,
 ):
     """Configure the 'table' subcommand parser.
@@ -296,7 +278,7 @@ def set_download_table_subparser(
 
     Parameters
     ----------
-    download_subs : argparse.ArgumentParser
+    download_subs : argparse._SubParsersAction
         Subparser collection to add the table subcommand to.
     default_output : Path
         Default output directory path for downloaded tables.
@@ -309,7 +291,8 @@ def set_download_table_subparser(
     """
     # !!! DOWNLOAD CODE TABLES
     download_table_parser = download_subs.add_parser(
-        "table", description="Download code tables for Brazil's foreign data")
+        "table", description="Download code tables for Brazil's foreign data"
+    )
     download_table_parser.add_argument(
         "tables",
         action="store",
@@ -351,8 +334,7 @@ def set_parser() -> argparse.ArgumentParser:
     """
     default_output = Path(".", "data", "secex-comex")
 
-    parser = argparse.ArgumentParser(
-        description="Download Brazil's foreign trade data")
+    parser = argparse.ArgumentParser(description="Download Brazil's foreign trade data")
     parser.set_defaults(func=download_help)
 
     subparsers = parser.add_subparsers()

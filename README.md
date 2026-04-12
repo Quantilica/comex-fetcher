@@ -38,11 +38,54 @@ comexdown trade 2008:2019 -o "./DATA"
 Download code tables.
 
 ```shell
-comexdown table all       # Download all related code files
-comexdown table uf        # Download only the UF.csv file
-comexdown table ncm_cgce  # Download only the NCM_CGCE.csv file
-comexdown table nbm_ncm   # Download only the NBM_NCM.csv file
+comexdown tables  # Download all related code files
 ```
+
+## Datasets
+
+- Trade data:
+  - exp
+  - imp
+  - exp-mun
+  - imp-mun
+  - exp-nbm
+  - imp-nbm
+- Unique trade data files:
+  - exp-completa
+  - imp-completa
+  - exp-mun-completa
+  - imp-mun-completa
+- Trade validation data:
+  - exp-validacao
+  - imp-validacao
+  - exp-mun-validacao
+  - imp-mun-validacao
+- Trade REPETRO:
+  - exp-repetro
+  - imp-repetro
+- Auxiliary tables:
+  - ncm
+  - sh
+  - cuci
+  - cgce
+  - isic
+  - siit
+  - fat-agreg
+  - unidade
+  - ppi
+  - ppe
+  - grupo
+  - pais
+  - pais-bloco
+  - uf
+  - uf-mun
+  - via
+  - urf
+  - isic-cuci
+  - nbm
+  - ncm-nbm
+
+Data source: [Ministério da Economia/Secretaria de Comércio Exterior](https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta)
 
 ## Development
 

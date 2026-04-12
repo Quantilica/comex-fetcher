@@ -11,14 +11,29 @@ The module disables SSL warnings for compatibility with government servers
 that may have certificate issues.
 """
 
+import datetime as dt
 import sys
 import time
 from pathlib import Path
+from typing import Any, Generator
 
 import requests
 import urllib3
 
+from .constants import (
+    AUX_TABLES,
+    TRADE,
+    TABLES,
+    ARQUIVO_UNICO,
+    REPETRO_TABLES,
+    TOTAIS_PARA_VALIDACAO,
+    OTHER_TABLES,
+)
+from .urls import get_url
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+CURRENT_DATE = dt.datetime.now()
+CURRENT_YEAR = CURRENT_DATE.year
 
 
 def remote_is_more_recent(headers: dict, dest: Path) -> bool:
@@ -144,6 +159,7 @@ def _download_stream(
 def download_file(
     url: str,
     output: Path,
+    client: requests.Session,
     retry: int = 3,
     blocksize: int = 8192,
     verify_ssl: bool = False,
@@ -160,6 +176,8 @@ def download_file(
         Source URL of the file to download.
     output : Path
         Destination local path where the file will be saved.
+    client : requests.Session
+        HTTP session object for making requests.
     retry : int, optional
         Maximum number of download attempts, by default 3.
     blocksize : int, optional
@@ -203,9 +221,7 @@ def download_file(
 
         try:
             # Check for updates with HEAD request
-            head_resp = requests.head(
-                url, headers=headers, timeout=10, verify=verify_ssl
-            )
+            head_resp = client.head(url, headers=headers, timeout=10, verify=verify_ssl)
 
             # Check if local file is up to date (i.e. remote is NOT newer)
             cond = remote_is_more_recent(head_resp.headers, output)
@@ -215,7 +231,7 @@ def download_file(
                 return output
 
             # Perform the specific download
-            with requests.get(
+            with client.get(
                 url,
                 headers=headers,
                 stream=True,
@@ -234,3 +250,211 @@ def download_file(
                 raise
 
     return output
+
+
+def get_file_metadata(client: requests.Session, url: str) -> dict[str, Any]:
+    """Returns the metadata of a file
+
+    Parameters
+    ----------
+    url: str
+        The file's URL
+    """
+    r = client.head(url, verify=False)
+    file_size = int(r.headers.get("Content-Length", 0))
+    default_last_modified_string = "Thu, 01 Jan 1970 00:00:00 GMT"
+    last_modified = dt.datetime.strptime(
+        r.headers.get("Last-Modified", default_last_modified_string),
+        "%a, %d %b %Y %H:%M:%S %Z",
+    )
+    return {
+        "size": file_size,
+        "last_modified": last_modified,
+    }
+
+
+def get_links_metadata(
+    client: requests.Session,
+) -> Generator[dict[str, Any], None, None]:
+    """Get metadata of all files to download"""
+
+    for dataset in TRADE:
+        start_year, end_year = TRADE[dataset]["year_range"]
+        if not end_year:
+            end_year = CURRENT_DATE.year
+        for year in range(start_year, end_year + 1):
+            url = get_url(dataset, year=year)
+            link_metadata = get_file_metadata(client=client, url=url)
+            link_metadata["partitions"] = [str(year)]
+            yield link_metadata
+    for dataset in TABLES.keys():
+        url = get_url(dataset)
+        link_metadata = get_file_metadata(client=client, url=url)
+        link_metadata["dataset_grouping"] = ["tabelas"]
+        yield link_metadata
+    for dataset in REPETRO_TABLES.keys():
+        url = get_url(dataset)
+        link_metadata = get_file_metadata(client=client, url=url)
+        link_metadata["dataset_grouping"] = ["repetro"]
+        yield link_metadata
+    for dataset in TOTAIS_PARA_VALIDACAO.keys():
+        url = get_url(dataset)
+        link_metadata = get_file_metadata(client=client, url=url)
+        link_metadata["dataset_grouping"] = ["totais-para-validacao"]
+        yield link_metadata
+    for dataset in ARQUIVO_UNICO.keys():
+        url = get_url(dataset)
+        link_metadata = get_file_metadata(client=client, url=url)
+        link_metadata["dataset_grouping"] = ["arquivo-unico"]
+        yield link_metadata
+    for dataset in OTHER_TABLES.keys():
+        url = get_url(dataset)
+        link_metadata = get_file_metadata(client=client, url=url)
+        yield link_metadata
+
+
+def fetch_table(table_name: str, data_dir: Path, client: requests.Session):
+    """Downloads a table
+
+    Parameters
+    ----------
+    table_name: str
+        The name of the table to download
+    data_dir: Path
+        The data directory path of downloaded file
+    """
+    url = get_url(table_name)
+    metadata = get_file_metadata(client=client, url=url)
+    filepath = get_table_filepath(
+        data_dir=data_dir,
+        table_name=table_name,
+        modified=metadata["last_modified"],
+        file_extension="csv",
+    )
+    if filepath.exists():
+        return
+    download_file(url, filepath, client)
+
+
+def fetch_tabelas_auxiliares(data_dir: Path, client: requests.Session):
+    """Downloads tabelas-auxiliares file
+
+    Parameters
+    ----------
+    data_dir: Path
+        Destination path directory to save file
+    """
+    url = get_url("tabelas-auxiliares")
+    metadata = get_file_metadata(client=client, url=url)
+    filepath = get_table_filepath(
+        data_dir=data_dir,
+        table_name="tabelas-auxiliares",
+        modified=metadata["last_modified"],
+        file_extension="xlsx",
+    )
+    if filepath.exists():
+        return
+    download_file(url, filepath, client)
+
+
+def fetch_trade(data_dir: Path, dataset: str, year: int, client: requests.Session):
+    url = get_url(table=dataset, year=year)
+    metadata = get_file_metadata(client=client, url=url)
+    filepath = get_trade_filepath(
+        data_dir=data_dir,
+        dataset=dataset,
+        year=year,
+        modified=metadata["last_modified"],
+    )
+    if filepath.exists():
+        return
+    download_file(url, filepath, client)
+
+
+def fetch_trade_unique(data_dir: Path, dataset: str, client: requests.Session):
+    """Downloads the file with complete data
+
+    Parameters
+    ----------
+    data_dir : Path
+        Destination path directory to save file
+    """
+    url = get_url(dataset)
+    metadata = get_file_metadata(client=client, url=url)
+    if dataset in TOTAIS_PARA_VALIDACAO:
+        file_extension = "csv"
+    elif dataset in ARQUIVO_UNICO:
+        file_extension = "zip"
+    filepath = get_trade_unique_filepath(
+        data_dir=data_dir,
+        dataset=dataset,
+        modified=metadata["last_modified"],
+        file_extension=file_extension,
+    )
+    if filepath.exists():
+        return
+    download_file(url, filepath, client)
+
+
+def fetch_repetro(data_dir: Path, dataset: str, client: requests.Session):
+    """Downloads the file with complete data of repetro
+
+    Parameters
+    ----------
+    data_dir : Path
+        Destination path directory to save file
+    """
+    url = get_url(dataset)
+    metadata = get_file_metadata(client=client, url=url)
+    filepath = get_table_filepath(
+        data_dir=data_dir,
+        table_name=dataset,
+        modified=metadata["last_modified"],
+        file_extension="xlsx",
+    )
+    if filepath.exists():
+        return
+    download_file(url, filepath, client)
+
+
+def download_tables(data_dir: Path, client: requests.Session):
+    for table in AUX_TABLES:
+        fetch_table(table, data_dir, client)
+    fetch_tabelas_auxiliares(data_dir, client)
+
+
+def download_trade(data_dir: Path, client: requests.Session):
+    for dataset in TRADE:
+        start_year, end_year = TRADE[dataset]["year_range"]
+        if end_year is None:
+            end_year = CURRENT_YEAR
+        for year in range(start_year, end_year + 1):
+            fetch_trade(
+                data_dir=data_dir,
+                dataset=dataset,
+                year=year,
+                client=client,
+            )
+
+
+def download_trade_completa(data_dir: Path, client: requests.Session):
+    for dataset in ARQUIVO_UNICO:
+        fetch_trade_unique(data_dir=data_dir, dataset=dataset, client=client)
+
+
+def download_trade_validacao(data_dir: Path, client: requests.Session):
+    for dataset in TOTAIS_PARA_VALIDACAO:
+        fetch_trade_unique(data_dir=data_dir, dataset=dataset, client=client)
+
+
+def download_repetro(data_dir: Path, client: requests.Session):
+    for dataset in REPETRO_TABLES:
+        fetch_repetro(data_dir=data_dir, dataset=dataset, client=client)
+
+
+def download_all(data_dir: Path, client: requests.Session):
+    download_tables(data_dir, client)
+    download_trade(data_dir, client)
+    download_repetro(data_dir, client)
+    download_trade_validacao(data_dir, client)
+    download_trade_completa(data_dir, client)

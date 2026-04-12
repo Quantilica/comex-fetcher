@@ -13,9 +13,15 @@ Data sources:
 All URLs point to the official government server at balanca.economia.gov.br.
 """
 
-from comexdown import constants
-
-BASE_URL = "https://balanca.economia.gov.br/balanca/bd/"
+from .constants import (
+    ARQUIVO_UNICO,
+    AUX_TABLES,
+    BASE_URL,
+    OTHER_TABLES,
+    REPETRO_TABLES,
+    TOTAIS_PARA_VALIDACAO,
+    TRADE,
+)
 
 
 def table(table_name: str) -> str:
@@ -28,21 +34,14 @@ def table(table_name: str) -> str:
     ----------
     table_name : str
         Name of the table to download. Must be a key in constants.TABLES
-        (e.g., 'ncm', 'pais', 'uf', 'agronegocio').
+        (e.g., 'ncm', 'pais', 'uf').
 
     Returns
     -------
     str
         Full URL to download the requested table.
-
-    Notes
-    -----
-    The 'agronegocio' table is hosted on GitHub rather than the government
-    server and has a custom URL.
     """
-    if table_name == "agronegocio":
-        return constants.TABLES["agronegocio"]["url"]
-    return f"{BASE_URL}tabelas/{constants.AUX_TABLES[table_name]}"
+    return f"{BASE_URL}tabelas/{AUX_TABLES[table_name]}"
 
 
 def trade(
@@ -124,3 +123,27 @@ def complete(direction: str, mun: bool = False) -> str:
     if mun:
         return f"{BASE_URL}comexstat-bd/mun/{direction}_COMPLETA_MUN.zip"
     return f"{BASE_URL}comexstat-bd/ncm/{direction}_COMPLETA.zip"
+
+
+def get_url(table, **kwargs):
+    year = kwargs.get("year", None)
+    match table:
+        case "exp" | "imp" | "exp-mun" | "imp-mun" | "exp-nbm" | "imp-nbm":
+            url = TRADE[table]["server_dir"] + TRADE[table]["server_filename"].format(
+                year=year
+            )
+        case "exp-completa" | "imp-completa":
+            url = ARQUIVO_UNICO[table]["url"]
+        case "exp-mun-completa" | "imp-mun-completa":
+            url = ARQUIVO_UNICO[table]["url"]
+        case "exp-validacao" | "imp-validacao":
+            url = TOTAIS_PARA_VALIDACAO[table]["url"]
+        case "exp-mun-validacao" | "imp-mun-validacao":
+            url = TOTAIS_PARA_VALIDACAO[table]["url"]
+        case "exp-repetro" | "imp-repetro":
+            url = REPETRO_TABLES[table]["url"]
+        case "tabelas-auxiliares":
+            url = OTHER_TABLES[table]["url"]
+        case _:
+            url = BASE_URL + "tabelas/" + AUX_TABLES[table]
+    return url
