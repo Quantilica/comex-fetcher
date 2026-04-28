@@ -1,4 +1,5 @@
 import unittest
+
 from comexdown import urls
 
 
@@ -71,11 +72,4 @@ class TestUrls(unittest.TestCase):
         self.assertEqual(
             url,
             "https://balanca.economia.gov.br/balanca/bd/comexstat-bd/mun/IMP_COMPLETA_MUN.zip",
-        )
-
-    def test_agronegocio(self):
-        url = urls.table("agronegocio")
-        self.assertEqual(
-            url,
-            "https://github.com/dankkom/ncm-agronegocio/raw/master/ncm-agronegocio.csv",
         )

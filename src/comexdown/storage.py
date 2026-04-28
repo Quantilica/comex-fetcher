@@ -13,6 +13,7 @@ File organization:
 """
 
 from pathlib import Path
+
 from comexdown.constants import TABLES
 
 
@@ -220,21 +221,25 @@ def ensure_path(path: Path | str) -> Path:
 
 
 def get_creation_time(path: Path) -> float:
-    """Get the creation time of a file.
-
-    Parameters
-    ----------
-    path : Path
-        Path to the file.
-
-    Returns
-    -------
-    float
-        File creation timestamp as seconds since epoch.
-
-    Notes
-    -----
-    On Unix systems, this may return the time of the last metadata change
-    rather than creation time, depending on the filesystem.
-    """
+    """Get the creation time of a file."""
     return path.stat().st_ctime
+
+
+def path_aux(root: Path | str, name: str) -> Path:
+    """Generate path for auxiliary table file."""
+    return DataRepository(root).path_aux(name)
+
+
+def path_trade(root: Path | str, direction: str, year: int, mun: bool = False) -> Path:
+    """Generate path for trade data file (NCM classification)."""
+    return DataRepository(root).path_trade(direction, year, mun)
+
+
+def path_trade_nbm(root: Path | str, direction: str, year: int) -> Path:
+    """Generate path for NBM trade data file."""
+    return DataRepository(root).path_trade_nbm(direction, year)
+
+
+def path_trade_completa(root: Path | str, direction: str, mun: bool = False) -> Path:
+    """Generate path for complete trade data file."""
+    return DataRepository(root).path_trade_completa(direction, mun)

@@ -1,3 +1,4 @@
+import http.client
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -7,27 +8,38 @@ from comexdown import download
 
 class TestDownloadFile(unittest.TestCase):
     @mock.patch("comexdown.download.sys")
-    @mock.patch("comexdown.download.requests")
-    @mock.mock_open()
-    def test_download_file(self, mock_open, mock_requests, mock_sys):
-        # Setup mock response
-        mock_response = mock.Mock()
-        mock_response.headers = {"content-length": "100"}
-        mock_response.iter_content.return_value = [b"data"]
-        mock_response.raise_for_status = mock.Mock()
-        mock_requests.get.return_value.__enter__.return_value = mock_response
+    @mock.patch("urllib.request.urlopen")
+    @mock.patch("urllib.request.Request")
+    @mock.patch("os.rename")
+    @mock.patch("os.utime")
+    @mock.patch("os.remove")
+    @mock.patch("comexdown.download.remote_is_more_recent")
+    def test_download_file(self, mock_recent, mock_remove, mock_utime, mock_rename, mock_request, mock_urlopen, mock_sys):
+        # Setup mock for HEAD request response
+        mock_head_resp = mock.MagicMock()
+        mock_head_resp.headers = http.client.HTTPMessage()
+        mock_head_resp.headers["Content-Length"] = "9"
+        mock_head_resp.__enter__.return_value = mock_head_resp
 
-        # Mock HEAD request for update check (returning different time ensuring download happens)
-        mock_head = mock.Mock()
-        mock_head.headers = {}
-        mock_requests.head.return_value = mock_head
+        # Setup mock for GET request response
+        mock_get_resp = mock.MagicMock()
+        mock_get_resp.headers = http.client.HTTPMessage()
+        mock_get_resp.headers["Content-Length"] = "9"
+        mock_get_resp.read.side_effect = [b"some data", b""]
+        mock_get_resp.__enter__.return_value = mock_get_resp
 
-        download.download_file(
-            "http://www.example.com/file.csv", Path("data/file.csv"))
+        # urlopen is called twice: once for HEAD, once for GET
+        mock_urlopen.side_effect = [mock_head_resp, mock_get_resp]
+        mock_recent.return_value = True
 
-        mock_requests.get.assert_called()
-        mock_open.assert_called_with(Path("data/file.csv"), "wb")
-        mock_sys.stdout.write.assert_called()
+        # Use mock_open for the file operations
+        with mock.patch("builtins.open", mock.mock_open()) as mock_open:
+            download.download_file(
+                "http://www.example.com/file.csv", Path("data/file.csv"))
+
+        # Check if urlopen was called
+        self.assertEqual(mock_urlopen.call_count, 2)
+        mock_rename.assert_called()
 
 
 if __name__ == "__main__":
