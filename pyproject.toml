@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "quantilica-core",
+    "quantilica-core @ git+https://github.com/Quantilica/quantilica-core.git",
 ]
 
 [project.urls]
@@ -44,8 +44,8 @@ dev = [
 line-length = 79
 lint.select = ["E", "F", "I", "UP", "B"]
 
-[tool.uv.sources]
-quantilica-core = { path = "../quantilica-core", editable = true }
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [build-system]
 requires = ["hatchling"]
