@@ -1,6 +1,6 @@
 import unittest
 
-from comexdown import urls
+from comex_fetcher import urls
 
 
 class TestUrls(unittest.TestCase):

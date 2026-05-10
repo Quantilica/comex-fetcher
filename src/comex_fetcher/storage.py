@@ -9,7 +9,7 @@ conventions.
 from pathlib import Path
 
 from quantilica_core.storage import BaseDataRepository
-from comexdown.constants import TABLES
+from comex_fetcher.constants import TABLES
 
 
 class DataRepository(BaseDataRepository):

@@ -10,8 +10,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from comexdown import download_all, get_complete, get_table, get_year, get_year_nbm
-from comexdown.constants import AUX_TABLES, TABLES
+from comex_fetcher import download_all, get_complete, get_table, get_year, get_year_nbm
+from comex_fetcher.constants import AUX_TABLES, TABLES
 
 
 def expand_years(args_years: list[str]) -> list[int]:
@@ -76,7 +76,7 @@ def handle_table(args: argparse.Namespace):
             if t in AUX_TABLES:
                 tables_to_download.append(t)
             else:
-                print(f"Warning: Table '{t}' not found. Use 'comexdown table' without arguments to see available tables.")
+                print(f"Warning: Table '{t}' not found. Use 'comex-fetcher table' without arguments to see available tables.")
 
     if not tables_to_download:
         return
@@ -121,7 +121,7 @@ def print_code_tables():
 def set_parser() -> argparse.ArgumentParser:
     """Create and configure the main argument parser."""
     parser = argparse.ArgumentParser(
-        prog="comexdown",
+        prog="comex-fetcher",
         description="Download Brazil's foreign trade data (SECEX/COMEX)."
     )
     parser.set_defaults(func=lambda _: parser.print_help())

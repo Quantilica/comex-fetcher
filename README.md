@@ -1,28 +1,30 @@
-# comexdown: Brazil's foreign trade data downloader
+# comex-fetcher: Brazil's foreign trade data downloader
 
-![GitHub](https://img.shields.io/github/license/dankkom/comexdown?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comexdown?style=flat-square)
+![GitHub](https://img.shields.io/github/license/Quantilica/comex-fetcher?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comex-fetcher?style=flat-square)
 
 This package contains functions to download brazilian foreign trade data
 published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][1].
 
+> **Note:** This package was formerly known as `comexdown`. See [migration guide](#migration-from-comexdown) below.
+
 ## Installation
 
-`comexdown` package is available on PyPI, so just use `pip`!
+`comex-fetcher` package is available on PyPI:
 
 ```shell
-pip install comexdown
+pip install comex-fetcher
 ```
 
 ## Usage
 
 ```python
-import comexdown
+import comex_fetcher
 
 # Download main NCM table in the directory ./DATA
-comexdown.ncm(table="ncm", path="./DATA")
+comex_fetcher.ncm(table="ncm", path="./DATA")
 
 # Download 2019 exports data file in the directory ./DATA
-comexdown.exp(year=2019, path="./DATA")
+comex_fetcher.exp(year=2019, path="./DATA")
 ```
 
 ## Command line tool
@@ -32,13 +34,13 @@ Download data on Brazilian foreign trade transactions (Exports / Imports).
 You can specify a range of years to download at once.
 
 ```
-comexdown trade 2008:2019 -o "./DATA"
+comex-fetcher trade 2008:2019 -o "./DATA"
 ```
 
 Download code tables.
 
 ```shell
-comexdown tables  # Download all related code files
+comex-fetcher tables  # Download all related code files
 ```
 
 ## Datasets
@@ -87,23 +89,42 @@ comexdown tables  # Download all related code files
 
 Data source: [Ministério da Economia/Secretaria de Comércio Exterior](https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta)
 
+## Migration from comexdown
+
+If you were using `comexdown`, update your install and imports:
+
+```shell
+pip uninstall comexdown
+pip install comex-fetcher
+```
+
+```python
+# Before
+import comexdown
+comexdown.exp(year=2019, path="./DATA")
+
+# After
+import comex_fetcher
+comex_fetcher.exp(year=2019, path="./DATA")
+```
+
+The `comexdown` package on PyPI will redirect you automatically (with a deprecation warning), but updating your code is recommended.
+
 ## Development
 
 To setup a development environment clone this repository and install the required packages:
 
 ```shell
-git clone https://github.com/dankkom/comexdown.git
-cd comexdown
+git clone https://github.com/Quantilica/comex-fetcher.git
+cd comex-fetcher
 pip install -e .[dev]
 ```
 
 ### Run tests
 
-To run the tests suite, use the following command:
-
 ```shell
- pip install -e .[dev]
- pytest tests/
+pip install -e .[dev]
+pytest tests/
 ```
 
 [1]: https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta

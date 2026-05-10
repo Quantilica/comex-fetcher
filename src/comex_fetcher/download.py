@@ -25,7 +25,7 @@ from .urls import get_url
 CURRENT_DATE = dt.datetime.now()
 CURRENT_YEAR = CURRENT_DATE.year
 
-# Global client for comexdown
+# Global client for comex-fetcher
 client = HttpClient(
     timeout=60.0,
     headers={
@@ -63,7 +63,7 @@ def download_file(
             output,
             source_id="comexstat",
             dataset_id=dataset_id,
-            producer="comexdown",
+            producer="comex-fetcher",
         )
     finally:
         client.attempts = original_attempts

@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from comexdown import storage
+from comex_fetcher import storage
 
 
 class TestStorage(unittest.TestCase):

@@ -1,5 +1,5 @@
 [project]
-name = "comexdown"
+name = "comex-fetcher"
 version = "1.5.2"
 description = "A commandline utility to download Brazil's foreign trade data"
 readme = "README.md"
@@ -26,12 +26,12 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Quantilica/comexdown"
-Repository = "https://github.com/Quantilica/comexdown"
-Issues = "https://github.com/Quantilica/comexdown/issues"
+Homepage = "https://github.com/Quantilica/comex-fetcher"
+Repository = "https://github.com/Quantilica/comex-fetcher"
+Issues = "https://github.com/Quantilica/comex-fetcher/issues"
 
 [project.scripts]
-comexdown = "comexdown.cli:main"
+comex-fetcher = "comex_fetcher.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -39,6 +39,9 @@ dev = [
     "pytest>=8.0.0",
     "pytest-cov",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/comex_fetcher"]
 
 [tool.ruff]
 line-length = 79

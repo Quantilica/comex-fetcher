@@ -4,7 +4,7 @@ from collections import namedtuple
 from pathlib import Path
 from unittest import mock
 
-from comexdown import cli
+from comex_fetcher import cli
 
 
 class TestCliFunctions(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestCliFunctions(unittest.TestCase):
             [2010] + [2005, 2004, 2003, 2002, 2001, 2000]
         )
 
-    @mock.patch("comexdown.cli.set_parser")
+    @mock.patch("comex_fetcher.cli.set_parser")
     def test_main(self, mock_set_parser):
         cli.main()
         mock_set_parser.assert_called()
@@ -64,7 +64,7 @@ class TestCliDownloadCode(unittest.TestCase):
         self.parser = cli.set_parser()
         self.o = Path(".", "data")
 
-    @mock.patch("comexdown.cli.print_code_tables")
+    @mock.patch("comex_fetcher.cli.print_code_tables")
     def test_download_table_print_code_tables(self, mock_print_code_tables):
         self.args = self.parser.parse_args(
             [

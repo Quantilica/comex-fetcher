@@ -2,11 +2,11 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from comexdown import download
+from comex_fetcher import download
 
 
 class TestDownloadFile(unittest.TestCase):
-    @mock.patch("comexdown.download.client.download_with_manifest")
+    @mock.patch("comex_fetcher.download.client.download_with_manifest")
     def test_download_file(self, mock_download):
         # Setup mock return value
         mock_path = Path("data/file.csv")
@@ -23,7 +23,7 @@ class TestDownloadFile(unittest.TestCase):
             output,
             source_id="comexstat",
             dataset_id="data",
-            producer="comexdown",
+            producer="comex-fetcher",
         )
         self.assertEqual(result, mock_path)
 
