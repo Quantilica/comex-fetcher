@@ -1,128 +1,129 @@
-# comex-fetcher: Brazil's foreign trade data downloader
+# comex-fetcher: Coletor de dados de comércio exterior brasileiro
 
-![GitHub](https://img.shields.io/github/license/Quantilica/comex-fetcher?style=flat-square)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) ![Python](https://img.shields.io/badge/python-3.12+-blue.svg?style=flat-square)
 
-This package contains functions to download brazilian foreign trade data
-published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][1].
+Funções para download de dados de comércio exterior publicados pelo [Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC)][1]. Suporta exportações, importações, dados municipais, série histórica NBM e tabelas auxiliares de códigos (NCM, países, UF, via, etc.).
 
-> **Note:** This package was formerly known as `comexdown`. See [migration guide](#migration-from-comexdown) below.
+> Este pacote foi anteriormente distribuído como `comexdown`. Veja o [guia de migração](#migração-de-comexdown) abaixo.
 
-## Installation
+## Instalação
 
-Install directly from GitHub:
-
-```shell
+```bash
 pip install git+https://github.com/Quantilica/comex-fetcher.git
 ```
 
-## Usage
+## Uso Rápido
 
 ```python
 import comex_fetcher
+from pathlib import Path
 
-# Download main NCM table in the directory ./DATA
-comex_fetcher.ncm(table="ncm", path="./DATA")
+data_dir = Path("./dados")
 
-# Download 2019 exports data file in the directory ./DATA
-comex_fetcher.exp(year=2019, path="./DATA")
+# Exportações + importações de 2023
+comex_fetcher.get_year(data_dir, year=2023)
+
+# Apenas exportações
+comex_fetcher.get_year(data_dir, year=2023, exp=True)
+
+# Tabela de códigos NCM
+comex_fetcher.get_table(data_dir, table="ncm")
 ```
 
-## Command line tool
+## CLI
 
-Download data on Brazilian foreign trade transactions (Exports / Imports).
+```text
+comex-fetcher <comando> [argumentos]
 
-You can specify a range of years to download at once.
-
+Comandos:
+  trade ANOS [-exp] [-imp] [-mun] [-o CAMINHO]
+        Baixar transações comerciais para um ano, intervalo (2018:2023) ou
+        'complete'. -exp/-imp restringem a direção; padrão baixa ambas.
+        -mun adiciona dados no nível municipal (1997+).
+  table [TABELAS...] [-o CAMINHO]
+        Baixar tabelas de códigos auxiliares.
+        Execute sem argumentos para listar as disponíveis.
+  all [-y] [-o CAMINHO]
+        Baixar tudo. Pede confirmação exceto com -y.
 ```
-comex-fetcher trade 2008:2019 -o "./DATA"
+
+```bash
+# Exportações + importações de 2023
+comex-fetcher trade 2023 -o ./dados
+
+# Apenas importações, 2018–2023, com dados municipais
+comex-fetcher trade 2018:2023 -imp -mun -o ./dados
+
+# Todas as tabelas auxiliares
+comex-fetcher table all -o ./dados
 ```
 
-Download code tables.
+## API Python
 
-```shell
-comex-fetcher tables  # Download all related code files
+```python
+from pathlib import Path
+import comex_fetcher
+
+data_dir = Path("./dados")
+
+# Transações por ano — NCM (1997+)
+comex_fetcher.get_year(data_dir, year=2023)
+comex_fetcher.get_year(data_dir, year=2023, imp=True, mun=True)
+
+# Série histórica NBM (1989–1996)
+comex_fetcher.get_year_nbm(data_dir, year=1995)
+
+# Arquivos completos (todos os anos consolidados)
+comex_fetcher.get_complete(data_dir)
+
+# Tabela de código auxiliar
+comex_fetcher.get_table(data_dir, table="pais")
+
+# Tudo de uma vez
+comex_fetcher.download_all(data_dir)
 ```
 
-## Datasets
+## Datasets Disponíveis
 
-- Trade data:
-  - exp
-  - imp
-  - exp-mun
-  - imp-mun
-  - exp-nbm
-  - imp-nbm
-- Unique trade data files:
-  - exp-completa
-  - imp-completa
-  - exp-mun-completa
-  - imp-mun-completa
-- Trade validation data:
-  - exp-validacao
-  - imp-validacao
-  - exp-mun-validacao
-  - imp-mun-validacao
-- Trade REPETRO:
-  - exp-repetro
-  - imp-repetro
-- Auxiliary tables:
-  - ncm
-  - sh
-  - cuci
-  - cgce
-  - isic
-  - siit
-  - fat-agreg
-  - unidade
-  - ppi
-  - ppe
-  - grupo
-  - pais
-  - pais-bloco
-  - uf
-  - uf-mun
-  - via
-  - urf
-  - isic-cuci
-  - nbm
-  - ncm-nbm
+| Grupo | Datasets |
+| :--- | :--- |
+| Transações (NCM, 1997+) | `exp`, `imp`, `exp-mun`, `imp-mun` |
+| Histórico (NBM, 1989–96) | `exp-nbm`, `imp-nbm` |
+| Completos (arquivo único) | `exp-completa`, `imp-completa`, `exp-mun-completa`, `imp-mun-completa` |
+| Validação | `exp-validacao`, `imp-validacao`, `exp-mun-validacao`, `imp-mun-validacao` |
+| REPETRO | `exp-repetro`, `imp-repetro` |
+| Tabelas auxiliares | `ncm`, `sh`, `cuci`, `cgce`, `isic`, `siit`, `fat-agreg`, `unidade`, `ppi`, `ppe`, `grupo`, `pais`, `pais-bloco`, `uf`, `uf-mun`, `via`, `urf`, `isic-cuci`, `nbm`, `ncm-nbm` |
 
-Data source: [Ministério da Economia/Secretaria de Comércio Exterior](https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta)
+## Migração de comexdown
 
-## Migration from comexdown
+Se você usava o pacote `comexdown`, atualize a instalação e os imports:
 
-If you were using `comexdown`, update your install and imports:
-
-```shell
+```bash
 pip uninstall comexdown
 pip install git+https://github.com/Quantilica/comex-fetcher.git
 ```
 
 ```python
-# Before
+# Antes
 import comexdown
-comexdown.exp(year=2019, path="./DATA")
+comexdown.get_year(data_dir, year=2023)
 
-# After
+# Depois
 import comex_fetcher
-comex_fetcher.exp(year=2019, path="./DATA")
+comex_fetcher.get_year(data_dir, year=2023)
 ```
 
-## Development
+## Desenvolvimento
 
-To setup a development environment clone this repository and install the required packages:
-
-```shell
+```bash
 git clone https://github.com/Quantilica/comex-fetcher.git
 cd comex-fetcher
-pip install -e .[dev]
+uv sync --dev
+uv run pytest
 ```
 
-### Run tests
+## Licença
 
-```shell
-pip install -e .[dev]
-pytest tests/
-```
+MIT — veja [LICENSE](LICENSE).
 
 [1]: https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta
