@@ -1,19 +1,17 @@
 """Functions to download foreign trade data from remote servers.
 
 This module provides functionality for downloading files from the Brazilian
-government's foreign trade data servers using only the standard library.
+government's foreign trade data servers.
 """
 
 import datetime as dt
-import http.client
-import os
-import ssl
-import sys
-import time
-import urllib.request
 from pathlib import Path
 from typing import Any
 
+from quantilica_core.http import HttpClient
+import quantilica_core.metadata as core_meta
+
+from . import logger
 from .constants import (
     ARQUIVO_UNICO,
     OTHER_TABLES,
@@ -24,49 +22,20 @@ from .constants import (
 )
 from .urls import get_url
 
-# Create an unverified SSL context for government servers with certificate issues
-SSL_CONTEXT = ssl._create_unverified_context()
-
 CURRENT_DATE = dt.datetime.now()
 CURRENT_YEAR = CURRENT_DATE.year
 
-
-def remote_is_more_recent(headers: http.client.HTTPMessage, dest: Path) -> bool:
-    """Check if the remote file is more recent than the local file."""
-    if not dest.exists():
-        return True
-
-    last_modified = headers.get("Last-Modified")
-    if last_modified:
-        try:
-            # Parse standard HTTP date format
-            remote_mtime = time.mktime(
-                time.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-            )
-            if dest.stat().st_mtime < remote_mtime:
-                return True
-        except (ValueError, OSError):
-            return False
-
-    return False
-
-
-def _print_progress(
-    downloaded: int,
-    total: int,
-    width: int = 50,
-) -> None:
-    """Print download progress bar to stdout."""
-    if not total:
-        return
-
-    p = downloaded / total
-    filled = int(p * width)
-    bar = "=" * filled + "-" * (width - filled)
-    size_mb = downloaded / (1024 * 1024)
-    msg = f"\r[{bar}] {p:.1%} ({size_mb:.2f} MiB)"
-    sys.stdout.write(msg)
-    sys.stdout.flush()
+# Global client for comexdown
+client = HttpClient(
+    timeout=60.0,
+    headers={
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/142.0.0.0 Safari/537.36"
+        ),
+    }
+)
 
 
 def download_file(
@@ -75,97 +44,46 @@ def download_file(
     retry: int = 3,
     blocksize: int = 8192,
 ) -> Path:
-    """Download a file from a URL to a specific output path using urllib."""
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/142.0.0.0 Safari/537.36"
-        ),
-    }
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    temp_output = output.with_suffix(output.suffix + ".tmp")
-
-    for attempt in range(retry):
-        sys.stdout.write(f"Downloading: {url:<50} --> {output.name}\n")
-        sys.stdout.flush()
-
-        try:
-            # HEAD request to check if update is needed
-            req_head = urllib.request.Request(url, headers=headers, method="HEAD")
-            with urllib.request.urlopen(req_head, context=SSL_CONTEXT, timeout=10) as resp:
-                if output.exists() and not remote_is_more_recent(resp.headers, output):
-                    sys.stdout.write(f"{output.name} is up to date.\n")
-                    return output
-                total_length = int(resp.headers.get("Content-Length", 0))
-
-            # GET request for actual download
-            req_get = urllib.request.Request(url, headers=headers)
-            downloaded_size = 0
-            with urllib.request.urlopen(req_get, context=SSL_CONTEXT, timeout=30) as resp:
-                with open(temp_output, "wb") as f:
-                    while True:
-                        chunk = resp.read(blocksize)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                        downloaded_size += len(chunk)
-                        _print_progress(downloaded_size, total_length)
-
-            sys.stdout.write("\n")
-
-            if total_length > 0 and downloaded_size != total_length:
-                raise OSError(f"Incomplete download: {downloaded_size}/{total_length}")
-
-            # Atomic replace
-            if os.path.exists(output):
-                os.remove(output)
-            os.rename(temp_output, output)
-
-            # Set mtime from Last-Modified if available
-            last_modified = resp.headers.get("Last-Modified")
-            if last_modified:
-                remote_mtime = time.mktime(
-                    time.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-                )
-                os.utime(output, (time.time(), remote_mtime))
-
-            return output
-
-        except Exception as e:
-            sys.stdout.write(f"\nError downloading {url}: {e}\n")
-            if temp_output.exists():
-                temp_output.unlink()
-
-            if attempt < retry - 1:
-                sleep_time = 2 ** attempt
-                sys.stdout.write(f"Retrying in {sleep_time} seconds...\n")
-                time.sleep(sleep_time)
-            else:
-                raise
-
-    return output
+    """Download a file from a URL to a specific output path using HttpClient.
+    
+    Uses quantilica-core for freshness check, atomic write, and manifest.
+    """
+    # Note: blocksize is currently ignored by HttpClient.download_with_manifest
+    # which uses a default chunk size for hashing and httpx for downloading.
+    
+    # Temporarily adjust client attempts if retry is different from default
+    original_attempts = client.attempts
+    if retry != original_attempts:
+        client.attempts = retry
+        
+    try:
+        dataset_id = output.parent.name
+        return client.download_with_manifest(
+            url,
+            output,
+            source_id="comexstat",
+            dataset_id=dataset_id,
+            producer="comexdown",
+        )
+    finally:
+        client.attempts = original_attempts
 
 
 def get_file_metadata(url: str, timeout: int = 30) -> dict[str, Any]:
     """Returns metadata using HEAD request."""
-    headers = {"User-Agent": "Mozilla/5.0"}
-    req = urllib.request.Request(url, headers=headers, method="HEAD")
     try:
-        with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=timeout) as resp:
-            size = int(resp.headers.get("Content-Length", 0))
-            last_modified_str = resp.headers.get("Last-Modified")
-            if last_modified_str:
-                last_modified = dt.datetime.strptime(
-                    last_modified_str, "%a, %d %b %Y %H:%M:%S %Z"
-                )
-            else:
-                last_modified = dt.datetime(1970, 1, 1)
-            return {"size": size, "last_modified": last_modified}
+        resp = client.head(url)
+        size = int(resp.headers.get("Content-Length", 0))
+        last_modified_str = resp.headers.get("Last-Modified")
+        if last_modified_str:
+            import email.utils
+            last_modified = email.utils.parsedate_to_datetime(last_modified_str)
+        else:
+            last_modified = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
+        return {"size": size, "last_modified": last_modified}
     except Exception as e:
-        sys.stdout.write(f"Warning: Could not fetch metadata for {url}: {e}\n")
-        return {"size": 0, "last_modified": dt.datetime(1970, 1, 1)}
+        logger.warning(f"Could not fetch metadata for {url}: {e}")
+        return {"size": 0, "last_modified": dt.datetime(1970, 1, 1, tzinfo=dt.UTC)}
 
 
 def download_all(data_dir: Path):
@@ -199,7 +117,6 @@ def download_all(data_dir: Path):
     # 3. Complete Files
     for dataset in ARQUIVO_UNICO:
         url = get_url(dataset)
-        # We might need a path_trade_completa for mun too
         direction = dataset.split("-")[0]
         mun = "mun" in dataset
         dest = repo.path_trade_completa(direction, mun=mun)
@@ -208,7 +125,6 @@ def download_all(data_dir: Path):
     # 4. REPETRO
     for dataset in REPETRO_TABLES:
         url = get_url(dataset)
-        # Add path for REPETRO in storage.py if needed, for now use a default
         dest = data_dir / "repetro" / REPETRO_TABLES[dataset]["server_filename"]
         download_file(url, dest)
 
@@ -222,3 +138,47 @@ def download_all(data_dir: Path):
     url = get_url("tabelas-auxiliares")
     dest = data_dir / "auxiliary-tables" / OTHER_TABLES["tabelas-auxiliares"]["server_filename"]
     download_file(url, dest)
+
+
+def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:
+    """Generate a validated MetadataCatalog from a list of downloaded file paths."""
+    source_id = "comexstat"
+    source = core_meta.Source(
+        id=source_id,
+        name="Comex Stat - Ministério do Desenvolvimento, Indústria, Comércio e Serviços",
+        homepage_url="http://comexstat.mdic.gov.br",
+    )
+
+    datasets_map = {}
+    resources = []
+    
+    for file_path in downloaded_files:
+        # Determine dataset from parent directory name
+        dataset_id = file_path.parent.name
+        if dataset_id not in datasets_map:
+            datasets_map[dataset_id] = core_meta.Dataset(
+                id=dataset_id,
+                source_id=source_id,
+                name=dataset_id.upper().replace("-", " "),
+            )
+            
+        filename = file_path.name
+        resource_id = filename.replace(".", "_")
+        
+        resources.append(
+            core_meta.Resource(
+                id=resource_id,
+                dataset_id=dataset_id,
+                name=filename,
+                format="csv" if filename.endswith(".csv") else None,
+                path=str(file_path.absolute()),
+            )
+        )
+        
+    catalog = core_meta.MetadataCatalog(
+        sources=[source],
+        datasets=list(datasets_map.values()),
+        resources=resources,
+    )
+    catalog.validate_references()
+    return catalog

@@ -1,10 +1,14 @@
+from quantilica_core.logging import get_logger
+
 """Brazil's foreign trade data downloader"""
 
 from pathlib import Path
 
-from . import download, storage, urls
-
 __version__ = "1.5.2"
+
+logger = get_logger(__name__)
+
+from . import download, storage, urls
 
 
 def get_year(data_dir: Path, year: int, exp=False, imp=False, mun=False):
