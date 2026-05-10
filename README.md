@@ -1,6 +1,6 @@
 # comex-fetcher: Brazil's foreign trade data downloader
 
-![GitHub](https://img.shields.io/github/license/Quantilica/comex-fetcher?style=flat-square) ![PyPI](https://img.shields.io/pypi/v/comex-fetcher?style=flat-square)
+![GitHub](https://img.shields.io/github/license/Quantilica/comex-fetcher?style=flat-square)
 
 This package contains functions to download brazilian foreign trade data
 published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][1].
@@ -9,10 +9,10 @@ published by [Ministerio da Economia(ME)/Secretaria de Comercio Exterior (SCE)][
 
 ## Installation
 
-`comex-fetcher` package is available on PyPI:
+Install directly from GitHub:
 
 ```shell
-pip install comex-fetcher
+pip install git+https://github.com/Quantilica/comex-fetcher.git
 ```
 
 ## Usage
@@ -95,7 +95,7 @@ If you were using `comexdown`, update your install and imports:
 
 ```shell
 pip uninstall comexdown
-pip install comex-fetcher
+pip install git+https://github.com/Quantilica/comex-fetcher.git
 ```
 
 ```python
@@ -107,8 +107,6 @@ comexdown.exp(year=2019, path="./DATA")
 import comex_fetcher
 comex_fetcher.exp(year=2019, path="./DATA")
 ```
-
-The `comexdown` package on PyPI will redirect you automatically (with a deprecation warning), but updating your code is recommended.
 
 ## Development
 
