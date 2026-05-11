@@ -96,6 +96,20 @@ def get_file_metadata(url: str, timeout: int = 30) -> dict[str, Any]:
         return {"size": 0, "last_modified": dt.datetime(1970, 1, 1, tzinfo=dt.UTC)}
 
 
+_EPOCH = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
+
+
+def extract_date(meta: dict[str, Any]) -> dt.date | None:
+    """Return last_modified as dt.date from a get_file_metadata() result.
+
+    Returns None when the date is unknown (epoch sentinel or missing).
+    """
+    lm = meta.get("last_modified")
+    if not lm or lm <= _EPOCH:
+        return None
+    return lm.date()
+
+
 def _count_download_all_files() -> int:
     """Count total files that download_all() will attempt to download."""
     count = len(TABLES)
@@ -127,7 +141,8 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 1. Auxiliary Tables
         for table_name in TABLES:
             url = get_url(table_name)
-            dest = repo.path_aux(table_name)
+            date = extract_date(get_file_metadata(url))
+            dest = repo.path_aux(table_name, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
                 batch_pbar.update(1)
@@ -139,12 +154,13 @@ def download_all(data_dir: Path, show_progress: bool = True):
                 end_year = CURRENT_YEAR
             for year in range(start_year, end_year + 1):
                 url = get_url(dataset, year=year)
+                date = extract_date(get_file_metadata(url))
                 if "mun" in dataset:
-                    dest = repo.path_trade(dataset.split("-")[0], year, mun=True)
+                    dest = repo.path_trade(dataset.split("-")[0], year, mun=True, last_modified=date)
                 elif "nbm" in dataset:
-                    dest = repo.path_trade_nbm(dataset.split("-")[0], year)
+                    dest = repo.path_trade_nbm(dataset.split("-")[0], year, last_modified=date)
                 else:
-                    dest = repo.path_trade(dataset, year)
+                    dest = repo.path_trade(dataset, year, last_modified=date)
                 download_file(url, dest, show_progress=show_progress)
                 if show_progress:
                     batch_pbar.update(1)
@@ -152,9 +168,10 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 3. Complete Files
         for dataset in ARQUIVO_UNICO:
             url = get_url(dataset)
+            date = extract_date(get_file_metadata(url))
             direction = dataset.split("-")[0]
             mun = "mun" in dataset
-            dest = repo.path_trade_completa(direction, mun=mun)
+            dest = repo.path_trade_completa(direction, mun=mun, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
                 batch_pbar.update(1)
@@ -162,7 +179,8 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 4. REPETRO
         for dataset in REPETRO_TABLES:
             url = get_url(dataset)
-            dest = data_dir / "repetro" / REPETRO_TABLES[dataset]["server_filename"]
+            date = extract_date(get_file_metadata(url))
+            dest = repo.path_repetro(dataset, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
                 batch_pbar.update(1)
@@ -170,14 +188,16 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 5. Validation
         for dataset in TOTAIS_PARA_VALIDACAO:
             url = get_url(dataset)
-            dest = data_dir / "validacao" / TOTAIS_PARA_VALIDACAO[dataset]["server_filename"]
+            date = extract_date(get_file_metadata(url))
+            dest = repo.path_validacao(dataset, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
                 batch_pbar.update(1)
 
         # 6. Other
         url = get_url("tabelas-auxiliares")
-        dest = data_dir / "auxiliary-tables" / OTHER_TABLES["tabelas-auxiliares"]["server_filename"]
+        date = extract_date(get_file_metadata(url))
+        dest = repo.path_other("tabelas-auxiliares", "xlsx", last_modified=date)
         download_file(url, dest, show_progress=show_progress)
         if show_progress:
             batch_pbar.update(1)

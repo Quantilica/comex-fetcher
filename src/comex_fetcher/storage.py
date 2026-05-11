@@ -1,89 +1,157 @@
 """Functions to manage downloaded file locations and paths.
 
-This module provides utilities for generating standardized file paths for
-downloaded foreign trade data and auxiliary tables. It ensures consistent
-organization of data files with proper directory structure and naming
-conventions.
+Filenames follow the ecosystem convention:
+    {dataset}_{partition}@{YYYYMMDD}.{ext}
+
+where ``@YYYYMMDD`` is the server's Last-Modified date.  When the date is
+unknown the ``@`` suffix is omitted and the legacy bare name is used.
 """
 
+import datetime as dt
 from pathlib import Path
 
 from quantilica_core.storage import BaseDataRepository
+
 from comex_fetcher.constants import TABLES
 
 
+def _stamp(base: str, ext: str, last_modified: dt.date | None) -> str:
+    """Return ``{base}@{YYYYMMDD}.{ext}`` or ``{base}.{ext}`` when no date."""
+    if last_modified is None:
+        return f"{base}.{ext}"
+    return f"{base}@{last_modified:%Y%m%d}.{ext}"
+
+
 class DataRepository(BaseDataRepository):
-    """Class to manage data repository paths using BaseDataRepository."""
+    """Manages local storage for comex-fetcher files."""
 
     def __init__(self, root: Path | str):
         super().__init__(root)
 
-    def path_aux(self, name: str) -> Path:
-        """Generate path for auxiliary table file."""
+    # ------------------------------------------------------------------
+    # Auxiliary tables
+    # ------------------------------------------------------------------
+
+    def path_aux(
+        self,
+        name: str,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for an auxiliary code table file.
+
+        Example: ``auxiliary-tables/ncm@20240315.csv``
+        """
         file_info = TABLES.get(name)
         if not file_info:
             raise ValueError(f"Unknown auxiliary table name: {name}")
-
-        filename = file_info.get("file_ref")
-        if not filename:
-            raise ValueError(f"Auxiliary table '{name}' has no file reference")
-
+        ext = file_info["file_ref"].rsplit(".", 1)[-1].lower()
+        filename = _stamp(name, ext, last_modified)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
-    def path_trade(self, direction: str, year: int, mun: bool = False) -> Path:
-        """Generate path for trade data file (NCM classification)."""
+    def path_other(
+        self,
+        name: str,
+        ext: str,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for miscellaneous auxiliary files (e.g. tabelas-auxiliares).
+
+        Example: ``auxiliary-tables/tabelas-auxiliares@20240315.xlsx``
+        """
+        filename = _stamp(name, ext, last_modified)
+        return self.storage.path_for(f"auxiliary-tables/{filename}")
+
+    # ------------------------------------------------------------------
+    # Trade data (NCM)
+    # ------------------------------------------------------------------
+
+    def path_trade(
+        self,
+        direction: str,
+        year: int,
+        mun: bool = False,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for a trade data file (NCM classification).
+
+        Examples:
+            ``exp/exp_2023@20240315.csv``
+            ``exp-mun/exp-mun_2023@20240315.csv``
+        """
         direction = direction.lower()
         if direction not in ("exp", "imp"):
-            raise ValueError(f"Invalid argument direction={direction}")
+            raise ValueError(f"Invalid argument direction={direction!r}")
+        dataset = f"{direction}-mun" if mun else direction
+        filename = _stamp(f"{dataset}_{year}", "csv", last_modified)
+        return self.storage.path_for(f"{dataset}/{filename}")
 
-        prefix = f"{direction.upper()}_"
-        suffix = "_MUN" if mun else ""
-        dir_name = f"{direction}-mun" if mun else direction
-        filename = f"{prefix}{year}{suffix}.csv"
-        
-        return self.storage.path_for(f"{dir_name}/{filename}")
+    def path_trade_nbm(
+        self,
+        direction: str,
+        year: int,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for an NBM trade data file (1989–1996).
 
-    def path_trade_nbm(self, direction: str, year: int) -> Path:
-        """Generate path for NBM trade data file."""
+        Example: ``exp-nbm/exp-nbm_1994@20240315.csv``
+        """
         direction = direction.lower()
         if direction not in ("exp", "imp"):
-            raise ValueError(f"Invalid argument direction={direction}")
+            raise ValueError(f"Invalid argument direction={direction!r}")
+        dataset = f"{direction}-nbm"
+        filename = _stamp(f"{dataset}_{year}", "csv", last_modified)
+        return self.storage.path_for(f"{dataset}/{filename}")
 
-        prefix = f"{direction.upper()}_"
-        dir_name = f"{direction}-nbm"
-        filename = f"{prefix}{year}_NBM.csv"
-        
-        return self.storage.path_for(f"{dir_name}/{filename}")
+    def path_trade_completa(
+        self,
+        direction: str,
+        mun: bool = False,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for a complete historical trade data archive.
 
-    def path_trade_completa(self, direction: str, mun: bool = False) -> Path:
-        """Generate path for complete trade data file."""
+        Examples:
+            ``exp/exp_completa@20240315.zip``
+            ``exp-mun/exp-mun_completa@20240315.zip``
+        """
         direction = direction.lower()
         if direction not in ("exp", "imp"):
-            raise ValueError(f"Invalid argument direction={direction}")
+            raise ValueError(f"Invalid argument direction={direction!r}")
+        dataset = f"{direction}-mun" if mun else direction
+        filename = _stamp(f"{dataset}_completa", "zip", last_modified)
+        return self.storage.path_for(f"{dataset}/{filename}")
 
-        prefix = f"{direction.upper()}_"
-        suffix = "_MUN" if mun else ""
-        dir_name = f"{direction}-mun" if mun else direction
-        filename = f"{prefix}COMPLETA{suffix}.csv"
-        
-        return self.storage.path_for(f"{dir_name}/{filename}")
+    # ------------------------------------------------------------------
+    # REPETRO and validation
+    # ------------------------------------------------------------------
 
+    def path_repetro(
+        self,
+        dataset: str,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for a REPETRO file.
 
-def path_aux(root: Path | str, name: str) -> Path:
-    """Generate path for auxiliary table file."""
-    return DataRepository(root).path_aux(name)
+        Example: ``repetro/exp-repetro@20240315.xlsx``
+        """
+        filename = _stamp(dataset, "xlsx", last_modified)
+        return self.storage.path_for(f"repetro/{filename}")
 
+    def path_validacao(
+        self,
+        dataset: str,
+        *,
+        last_modified: dt.date | None = None,
+    ) -> Path:
+        """Path for a validation totals file.
 
-def path_trade(root: Path | str, direction: str, year: int, mun: bool = False) -> Path:
-    """Generate path for trade data file (NCM classification)."""
-    return DataRepository(root).path_trade(direction, year, mun)
-
-
-def path_trade_nbm(root: Path | str, direction: str, year: int) -> Path:
-    """Generate path for NBM trade data file."""
-    return DataRepository(root).path_trade_nbm(direction, year)
-
-
-def path_trade_completa(root: Path | str, direction: str, mun: bool = False) -> Path:
-    """Generate path for complete trade data file."""
-    return DataRepository(root).path_trade_completa(direction, mun)
+        Example: ``validacao/exp-validacao@20240315.csv``
+        """
+        filename = _stamp(dataset, "csv", last_modified)
+        return self.storage.path_for(f"validacao/{filename}")
