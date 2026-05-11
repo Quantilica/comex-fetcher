@@ -28,6 +28,7 @@ CURRENT_YEAR = CURRENT_DATE.year
 # Global client for comex-fetcher
 client = HttpClient(
     timeout=60.0,
+    verify=False,  # balanca.economia.gov.br has SSL certificate issues
     headers={
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
