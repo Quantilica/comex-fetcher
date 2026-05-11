@@ -4,12 +4,14 @@ This module provides functionality for downloading files from the Brazilian
 government's foreign trade data servers.
 """
 
+import contextlib
 import datetime as dt
 from pathlib import Path
 from typing import Any
 
 from quantilica_core.http import HttpClient
 import quantilica_core.metadata as core_meta
+from quantilica_core.progress import batch_progress, file_progress
 
 from . import logger
 from .constants import (
@@ -44,21 +46,28 @@ def download_file(
     output: Path,
     retry: int = 3,
     blocksize: int = 8192,
+    show_progress: bool = False,
 ) -> Path:
     """Download a file from a URL to a specific output path using HttpClient.
-    
+
     Uses quantilica-core for freshness check, atomic write, and manifest.
     """
-    # Note: blocksize is currently ignored by HttpClient.download_with_manifest
-    # which uses a default chunk size for hashing and httpx for downloading.
-    
-    # Temporarily adjust client attempts if retry is different from default
     original_attempts = client.attempts
     if retry != original_attempts:
         client.attempts = retry
-        
+
     try:
         dataset_id = output.parent.name
+        if show_progress:
+            with file_progress(output.name) as progress_cb:
+                return client.download_with_manifest(
+                    url,
+                    output,
+                    source_id="comexstat",
+                    dataset_id=dataset_id,
+                    producer="comex-fetcher",
+                    progress=progress_cb,
+                )
         return client.download_with_manifest(
             url,
             output,
@@ -87,58 +96,91 @@ def get_file_metadata(url: str, timeout: int = 30) -> dict[str, Any]:
         return {"size": 0, "last_modified": dt.datetime(1970, 1, 1, tzinfo=dt.UTC)}
 
 
-def download_all(data_dir: Path):
-    """Download everything from all datasets."""
-    from .storage import DataRepository
-
-    repo = DataRepository(data_dir)
-
-    # 1. Auxiliary Tables
-    for table_name in TABLES:
-        url = get_url(table_name)
-        dest = repo.path_aux(table_name)
-        download_file(url, dest)
-
-    # 2. Trade Data
+def _count_download_all_files() -> int:
+    """Count total files that download_all() will attempt to download."""
+    count = len(TABLES)
     for dataset in TRADE:
         start_year, end_year = TRADE[dataset]["year_range"]
         if end_year is None:
             end_year = CURRENT_YEAR
-        for year in range(start_year, end_year + 1):
-            url = get_url(dataset, year=year)
-            # Use appropriate repo path method based on dataset type
-            if "mun" in dataset:
-                dest = repo.path_trade(dataset.split("-")[0], year, mun=True)
-            elif "nbm" in dataset:
-                dest = repo.path_trade_nbm(dataset.split("-")[0], year)
-            else:
-                dest = repo.path_trade(dataset, year)
-            download_file(url, dest)
+        count += end_year - start_year + 1
+    count += len(ARQUIVO_UNICO)
+    count += len(REPETRO_TABLES)
+    count += len(TOTAIS_PARA_VALIDACAO)
+    count += 1  # tabelas-auxiliares
+    return count
 
-    # 3. Complete Files
-    for dataset in ARQUIVO_UNICO:
-        url = get_url(dataset)
-        direction = dataset.split("-")[0]
-        mun = "mun" in dataset
-        dest = repo.path_trade_completa(direction, mun=mun)
-        download_file(url, dest)
 
-    # 4. REPETRO
-    for dataset in REPETRO_TABLES:
-        url = get_url(dataset)
-        dest = data_dir / "repetro" / REPETRO_TABLES[dataset]["server_filename"]
-        download_file(url, dest)
+def download_all(data_dir: Path, show_progress: bool = True):
+    """Download everything from all datasets."""
+    from .storage import DataRepository
 
-    # 5. Validation
-    for dataset in TOTAIS_PARA_VALIDACAO:
-        url = get_url(dataset)
-        dest = data_dir / "validacao" / TOTAIS_PARA_VALIDACAO[dataset]["server_filename"]
-        download_file(url, dest)
+    repo = DataRepository(data_dir)
+    total = _count_download_all_files()
+    outer = (
+        batch_progress("comex-fetcher", total=total)
+        if show_progress
+        else contextlib.nullcontext()
+    )
 
-    # 6. Other
-    url = get_url("tabelas-auxiliares")
-    dest = data_dir / "auxiliary-tables" / OTHER_TABLES["tabelas-auxiliares"]["server_filename"]
-    download_file(url, dest)
+    with outer as batch_pbar:
+        # 1. Auxiliary Tables
+        for table_name in TABLES:
+            url = get_url(table_name)
+            dest = repo.path_aux(table_name)
+            download_file(url, dest, show_progress=show_progress)
+            if show_progress:
+                batch_pbar.update(1)
+
+        # 2. Trade Data
+        for dataset in TRADE:
+            start_year, end_year = TRADE[dataset]["year_range"]
+            if end_year is None:
+                end_year = CURRENT_YEAR
+            for year in range(start_year, end_year + 1):
+                url = get_url(dataset, year=year)
+                if "mun" in dataset:
+                    dest = repo.path_trade(dataset.split("-")[0], year, mun=True)
+                elif "nbm" in dataset:
+                    dest = repo.path_trade_nbm(dataset.split("-")[0], year)
+                else:
+                    dest = repo.path_trade(dataset, year)
+                download_file(url, dest, show_progress=show_progress)
+                if show_progress:
+                    batch_pbar.update(1)
+
+        # 3. Complete Files
+        for dataset in ARQUIVO_UNICO:
+            url = get_url(dataset)
+            direction = dataset.split("-")[0]
+            mun = "mun" in dataset
+            dest = repo.path_trade_completa(direction, mun=mun)
+            download_file(url, dest, show_progress=show_progress)
+            if show_progress:
+                batch_pbar.update(1)
+
+        # 4. REPETRO
+        for dataset in REPETRO_TABLES:
+            url = get_url(dataset)
+            dest = data_dir / "repetro" / REPETRO_TABLES[dataset]["server_filename"]
+            download_file(url, dest, show_progress=show_progress)
+            if show_progress:
+                batch_pbar.update(1)
+
+        # 5. Validation
+        for dataset in TOTAIS_PARA_VALIDACAO:
+            url = get_url(dataset)
+            dest = data_dir / "validacao" / TOTAIS_PARA_VALIDACAO[dataset]["server_filename"]
+            download_file(url, dest, show_progress=show_progress)
+            if show_progress:
+                batch_pbar.update(1)
+
+        # 6. Other
+        url = get_url("tabelas-auxiliares")
+        dest = data_dir / "auxiliary-tables" / OTHER_TABLES["tabelas-auxiliares"]["server_filename"]
+        download_file(url, dest, show_progress=show_progress)
+        if show_progress:
+            batch_pbar.update(1)
 
 
 def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:

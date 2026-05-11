@@ -44,7 +44,7 @@ def handle_trade(args: argparse.Namespace):
 
     if args.years == ["complete"]:
         print(f"Downloading complete historical datasets to {args.path}...")
-        get_complete(data_dir=args.path, exp=exp, imp=imp, mun=args.mun)
+        get_complete(data_dir=args.path, exp=exp, imp=imp, mun=args.mun, show_progress=True)
         return
 
     years = expand_years(args.years)
@@ -53,13 +53,12 @@ def handle_trade(args: argparse.Namespace):
             print(f"Skipping year {year}: Data not available before 1989.")
             continue
 
-        print(f"Processing year {year}...")
         if year < 1997:
             if args.mun:
                 print(f"Note: Municipality data not available for {year}. Downloading national data.")
-            get_year_nbm(data_dir=args.path, year=year, exp=exp, imp=imp)
+            get_year_nbm(data_dir=args.path, year=year, exp=exp, imp=imp, show_progress=True)
         else:
-            get_year(data_dir=args.path, year=year, exp=exp, imp=imp, mun=args.mun)
+            get_year(data_dir=args.path, year=year, exp=exp, imp=imp, mun=args.mun, show_progress=True)
 
 
 def handle_table(args: argparse.Namespace):
@@ -84,7 +83,7 @@ def handle_table(args: argparse.Namespace):
     print(f"Downloading {len(tables_to_download)} tables to {args.path}...")
     for table in tables_to_download:
         try:
-            get_table(data_dir=args.path, table=table)
+            get_table(data_dir=args.path, table=table, show_progress=True)
         except Exception as e:
             print(f"Error downloading table '{table}': {e}")
 
@@ -94,7 +93,7 @@ def handle_all(args: argparse.Namespace):
     print(f"Downloading ALL available datasets to {args.path}. This may take a long time and use several GBs of space.")
     confirm = input("Continue? [y/N]: ") if not getattr(args, 'yes', False) else 'y'
     if confirm.lower() == 'y':
-        download_all(data_dir=args.path)
+        download_all(data_dir=args.path, show_progress=True)
     else:
         print("Aborted.")
 
