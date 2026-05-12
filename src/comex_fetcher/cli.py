@@ -7,10 +7,13 @@ from Brazil's Ministry of Economy (SECEX/COMEX).
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
-from comex_fetcher import __version__, download_all, get_complete, get_table, get_year, get_year_nbm
+from quantilica_core.logging import configure_cli_logging
+
+from comex_fetcher import __version__, download_all, get_complete, get_table, get_year, get_year_nbm, logger
 from comex_fetcher.constants import AUX_TABLES, TABLES
 
 
@@ -37,28 +40,29 @@ def expand_years(args_years: list[str]) -> list[int]:
 
 def handle_trade(args: argparse.Namespace):
     """Handle the 'trade' subcommand."""
+    show_progress = not args.verbose
     if not args.exp and not args.imp:
         exp = imp = True
     else:
         exp, imp = args.exp, args.imp
 
     if args.years == ["complete"]:
-        print(f"Downloading complete historical datasets to {args.output}...")
-        get_complete(data_dir=args.output, exp=exp, imp=imp, mun=args.mun, show_progress=True)
+        logger.info(f"Downloading complete historical datasets to {args.output}...")
+        get_complete(data_dir=args.output, exp=exp, imp=imp, mun=args.mun, show_progress=show_progress)
         return
 
     years = expand_years(args.years)
     for year in years:
         if year < 1989:
-            print(f"Skipping year {year}: Data not available before 1989.")
+            logger.warning(f"Skipping year {year}: Data not available before 1989.")
             continue
 
         if year < 1997:
             if args.mun:
-                print(f"Note: Municipality data not available for {year}. Downloading national data.")
-            get_year_nbm(data_dir=args.output, year=year, exp=exp, imp=imp, show_progress=True)
+                logger.warning(f"Note: Municipality data not available for {year}. Downloading national data.")
+            get_year_nbm(data_dir=args.output, year=year, exp=exp, imp=imp, show_progress=show_progress)
         else:
-            get_year(data_dir=args.output, year=year, exp=exp, imp=imp, mun=args.mun, show_progress=True)
+            get_year(data_dir=args.output, year=year, exp=exp, imp=imp, mun=args.mun, show_progress=show_progress)
 
 
 def handle_table(args: argparse.Namespace):
@@ -75,25 +79,25 @@ def handle_table(args: argparse.Namespace):
             if t in AUX_TABLES:
                 tables_to_download.append(t)
             else:
-                print(f"Warning: Table '{t}' not found. Use 'comex-fetcher table' without arguments to see available tables.")
+                logger.warning(f"Table '{t}' not found. Use 'comex-fetcher table' without arguments to see available tables.")
 
     if not tables_to_download:
         return
 
-    print(f"Downloading {len(tables_to_download)} tables to {args.output}...")
+    logger.info(f"Downloading {len(tables_to_download)} tables to {args.output}...")
     for table in tables_to_download:
         try:
-            get_table(data_dir=args.output, table=table, show_progress=True)
+            get_table(data_dir=args.output, table=table, show_progress=not args.verbose)
         except Exception as e:
-            print(f"Error downloading table '{table}': {e}")
+            logger.error(f"Error downloading table '{table}': {e}")
 
 
 def handle_all(args: argparse.Namespace):
     """Handle the 'all' subcommand."""
-    print(f"Downloading ALL available datasets to {args.output}. This may take a long time and use several GBs of space.")
+    logger.info(f"Downloading ALL available datasets to {args.output}. This may take a long time and use several GBs of space.")
     confirm = input("Continue? [y/N]: ") if not getattr(args, 'yes', False) else 'y'
     if confirm.lower() == 'y':
-        download_all(data_dir=args.output, show_progress=True)
+        download_all(data_dir=args.output, show_progress=not args.verbose)
     else:
         print("Aborted.")
 
@@ -128,6 +132,12 @@ def set_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"%(prog)s {__version__}",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Exibir logs detalhados em vez de barra de progresso",
+    )
     parser.set_defaults(func=lambda _: parser.print_help())
 
     subparsers = parser.add_subparsers(title="commands", dest="command")
@@ -160,6 +170,9 @@ def main():
     """Main entry point."""
     parser = set_parser()
     args = parser.parse_args()
+    configure_cli_logging(verbose=args.verbose)
+    if not args.verbose:
+        logging.getLogger("comex_fetcher").setLevel(logging.WARNING)
 
     try:
         args.func(args)
