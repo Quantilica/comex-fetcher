@@ -33,6 +33,9 @@ Issues = "https://github.com/Quantilica/comex-fetcher/issues"
 [project.scripts]
 comex-fetcher = "comex_fetcher.cli:main"
 
+[project.entry-points."quantilica.fetchers"]
+comex = "comex_fetcher.plugin:app"
+
 [project.optional-dependencies]
 dev = [
     "ruff>=0.9.0",
