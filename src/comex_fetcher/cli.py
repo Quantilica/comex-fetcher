@@ -43,8 +43,8 @@ def handle_trade(args: argparse.Namespace):
         exp, imp = args.exp, args.imp
 
     if args.years == ["complete"]:
-        print(f"Downloading complete historical datasets to {args.path}...")
-        get_complete(data_dir=args.path, exp=exp, imp=imp, mun=args.mun, show_progress=True)
+        print(f"Downloading complete historical datasets to {args.output}...")
+        get_complete(data_dir=args.output, exp=exp, imp=imp, mun=args.mun, show_progress=True)
         return
 
     years = expand_years(args.years)
@@ -56,9 +56,9 @@ def handle_trade(args: argparse.Namespace):
         if year < 1997:
             if args.mun:
                 print(f"Note: Municipality data not available for {year}. Downloading national data.")
-            get_year_nbm(data_dir=args.path, year=year, exp=exp, imp=imp, show_progress=True)
+            get_year_nbm(data_dir=args.output, year=year, exp=exp, imp=imp, show_progress=True)
         else:
-            get_year(data_dir=args.path, year=year, exp=exp, imp=imp, mun=args.mun, show_progress=True)
+            get_year(data_dir=args.output, year=year, exp=exp, imp=imp, mun=args.mun, show_progress=True)
 
 
 def handle_table(args: argparse.Namespace):
@@ -80,20 +80,20 @@ def handle_table(args: argparse.Namespace):
     if not tables_to_download:
         return
 
-    print(f"Downloading {len(tables_to_download)} tables to {args.path}...")
+    print(f"Downloading {len(tables_to_download)} tables to {args.output}...")
     for table in tables_to_download:
         try:
-            get_table(data_dir=args.path, table=table, show_progress=True)
+            get_table(data_dir=args.output, table=table, show_progress=True)
         except Exception as e:
             print(f"Error downloading table '{table}': {e}")
 
 
 def handle_all(args: argparse.Namespace):
     """Handle the 'all' subcommand."""
-    print(f"Downloading ALL available datasets to {args.path}. This may take a long time and use several GBs of space.")
+    print(f"Downloading ALL available datasets to {args.output}. This may take a long time and use several GBs of space.")
     confirm = input("Continue? [y/N]: ") if not getattr(args, 'yes', False) else 'y'
     if confirm.lower() == 'y':
-        download_all(data_dir=args.path, show_progress=True)
+        download_all(data_dir=args.output, show_progress=True)
     else:
         print("Aborted.")
 
@@ -133,18 +133,18 @@ def set_parser() -> argparse.ArgumentParser:
     trade_parser.add_argument("-exp", "--exports", action="store_true", help="Download exports only")
     trade_parser.add_argument("-imp", "--imports", action="store_true", help="Download imports only")
     trade_parser.add_argument("-mun", "--municipality", action="store_true", help="Download municipality-level data (1997+)")
-    trade_parser.add_argument("-o", "--path", type=Path, default=Path("data/secex-comex"), help="Output directory")
+    trade_parser.add_argument("-o", "--output", type=Path, default=Path("/data/secex-comex"), help="Output directory")
     trade_parser.set_defaults(func=handle_trade)
 
     # Table command
     table_parser = subparsers.add_parser("table", help="Download auxiliary code tables")
     table_parser.add_argument("tables", nargs="*", help="Table names or 'all'. Leave empty to list available tables.")
-    table_parser.add_argument("-o", "--path", type=Path, default=Path("data/secex-comex"), help="Output directory")
+    table_parser.add_argument("-o", "--output", type=Path, default=Path("/data/secex-comex"), help="Output directory")
     table_parser.set_defaults(func=handle_table)
 
     # All command
     all_parser = subparsers.add_parser("all", help="Download EVERYTHING (all years, all tables, all datasets)")
-    all_parser.add_argument("-o", "--path", type=Path, default=Path("data/secex-comex"), help="Output directory")
+    all_parser.add_argument("-o", "--output", type=Path, default=Path("/data/secex-comex"), help="Output directory")
     all_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
     all_parser.set_defaults(func=handle_all)
 
