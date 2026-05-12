@@ -7,7 +7,6 @@ government's foreign trade data servers.
 import contextlib
 import datetime as dt
 from pathlib import Path
-from typing import Any
 
 from quantilica_core.http import HttpClient
 import quantilica_core.metadata as core_meta
@@ -16,7 +15,6 @@ from quantilica_core.progress import batch_progress, file_progress
 from . import logger
 from .constants import (
     ARQUIVO_UNICO,
-    OTHER_TABLES,
     REPETRO_TABLES,
     TABLES,
     TOTAIS_PARA_VALIDACAO,
@@ -79,35 +77,15 @@ def download_file(
         client.attempts = original_attempts
 
 
-def get_file_metadata(url: str, timeout: int = 30) -> dict[str, Any]:
-    """Returns metadata using HEAD request."""
+def _safe_head_date(url: str) -> dt.date | None:
+    """Return the Last-Modified date from a HEAD request, or None on failure."""
     try:
-        resp = client.head(url)
-        size = int(resp.headers.get("Content-Length", 0))
-        last_modified_str = resp.headers.get("Last-Modified")
-        if last_modified_str:
-            import email.utils
-            last_modified = email.utils.parsedate_to_datetime(last_modified_str)
-        else:
-            last_modified = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
-        return {"size": size, "last_modified": last_modified}
+        meta = client.head_metadata(url)
+        lm = meta.get("last_modified")
+        return lm.date() if lm else None
     except Exception as e:
         logger.warning(f"Could not fetch metadata for {url}: {e}")
-        return {"size": 0, "last_modified": dt.datetime(1970, 1, 1, tzinfo=dt.UTC)}
-
-
-_EPOCH = dt.datetime(1970, 1, 1, tzinfo=dt.UTC)
-
-
-def extract_date(meta: dict[str, Any]) -> dt.date | None:
-    """Return last_modified as dt.date from a get_file_metadata() result.
-
-    Returns None when the date is unknown (epoch sentinel or missing).
-    """
-    lm = meta.get("last_modified")
-    if not lm or lm <= _EPOCH:
         return None
-    return lm.date()
 
 
 def _count_download_all_files() -> int:
@@ -141,7 +119,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 1. Auxiliary Tables
         for table_name in TABLES:
             url = get_url(table_name)
-            date = extract_date(get_file_metadata(url))
+            date = _safe_head_date(url)
             dest = repo.path_aux(table_name, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
@@ -154,7 +132,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
                 end_year = CURRENT_YEAR
             for year in range(start_year, end_year + 1):
                 url = get_url(dataset, year=year)
-                date = extract_date(get_file_metadata(url))
+                date = _safe_head_date(url)
                 if "mun" in dataset:
                     dest = repo.path_trade(dataset.split("-")[0], year, mun=True, last_modified=date)
                 elif "nbm" in dataset:
@@ -168,7 +146,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 3. Complete Files
         for dataset in ARQUIVO_UNICO:
             url = get_url(dataset)
-            date = extract_date(get_file_metadata(url))
+            date = _safe_head_date(url)
             direction = dataset.split("-")[0]
             mun = "mun" in dataset
             dest = repo.path_trade_completa(direction, mun=mun, last_modified=date)
@@ -179,7 +157,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 4. REPETRO
         for dataset in REPETRO_TABLES:
             url = get_url(dataset)
-            date = extract_date(get_file_metadata(url))
+            date = _safe_head_date(url)
             dest = repo.path_repetro(dataset, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
@@ -188,7 +166,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
         # 5. Validation
         for dataset in TOTAIS_PARA_VALIDACAO:
             url = get_url(dataset)
-            date = extract_date(get_file_metadata(url))
+            date = _safe_head_date(url)
             dest = repo.path_validacao(dataset, last_modified=date)
             download_file(url, dest, show_progress=show_progress)
             if show_progress:
@@ -196,7 +174,7 @@ def download_all(data_dir: Path, show_progress: bool = True):
 
         # 6. Other
         url = get_url("tabelas-auxiliares")
-        date = extract_date(get_file_metadata(url))
+        date = _safe_head_date(url)
         dest = repo.path_other("tabelas-auxiliares", "xlsx", last_modified=date)
         download_file(url, dest, show_progress=show_progress)
         if show_progress:
