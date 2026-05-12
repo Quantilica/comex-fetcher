@@ -10,16 +10,9 @@ unknown the ``@`` suffix is omitted and the legacy bare name is used.
 import datetime as dt
 from pathlib import Path
 
-from quantilica_core.storage import BaseDataRepository
+from quantilica_core.storage import BaseDataRepository, stamp_filename
 
 from comex_fetcher.constants import TABLES
-
-
-def _stamp(base: str, ext: str, last_modified: dt.date | None) -> str:
-    """Return ``{base}@{YYYYMMDD}.{ext}`` or ``{base}.{ext}`` when no date."""
-    if last_modified is None:
-        return f"{base}.{ext}"
-    return f"{base}@{last_modified:%Y%m%d}.{ext}"
 
 
 class DataRepository(BaseDataRepository):
@@ -46,7 +39,7 @@ class DataRepository(BaseDataRepository):
         if not file_info:
             raise ValueError(f"Unknown auxiliary table name: {name}")
         ext = file_info["file_ref"].rsplit(".", 1)[-1].lower()
-        filename = _stamp(name, ext, last_modified)
+        filename = stamp_filename(name, ext, last_modified)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
     def path_other(
@@ -60,7 +53,7 @@ class DataRepository(BaseDataRepository):
 
         Example: ``auxiliary-tables/tabelas-auxiliares@20240315.xlsx``
         """
-        filename = _stamp(name, ext, last_modified)
+        filename = stamp_filename(name, ext, last_modified)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
     # ------------------------------------------------------------------
@@ -85,7 +78,7 @@ class DataRepository(BaseDataRepository):
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-mun" if mun else direction
-        filename = _stamp(f"{dataset}_{year}", "csv", last_modified)
+        filename = stamp_filename(f"{dataset}_{year}", "csv", last_modified)
         return self.storage.path_for(f"{dataset}/{filename}")
 
     def path_trade_nbm(
@@ -103,7 +96,7 @@ class DataRepository(BaseDataRepository):
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-nbm"
-        filename = _stamp(f"{dataset}_{year}", "csv", last_modified)
+        filename = stamp_filename(f"{dataset}_{year}", "csv", last_modified)
         return self.storage.path_for(f"{dataset}/{filename}")
 
     def path_trade_completa(
@@ -123,7 +116,7 @@ class DataRepository(BaseDataRepository):
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-mun" if mun else direction
-        filename = _stamp(f"{dataset}_completa", "zip", last_modified)
+        filename = stamp_filename(f"{dataset}_completa", "zip", last_modified)
         return self.storage.path_for(f"{dataset}/{filename}")
 
     # ------------------------------------------------------------------
@@ -140,7 +133,7 @@ class DataRepository(BaseDataRepository):
 
         Example: ``repetro/exp-repetro@20240315.xlsx``
         """
-        filename = _stamp(dataset, "xlsx", last_modified)
+        filename = stamp_filename(dataset, "xlsx", last_modified)
         return self.storage.path_for(f"repetro/{filename}")
 
     def path_validacao(
@@ -153,5 +146,5 @@ class DataRepository(BaseDataRepository):
 
         Example: ``validacao/exp-validacao@20240315.csv``
         """
-        filename = _stamp(dataset, "csv", last_modified)
+        filename = stamp_filename(dataset, "csv", last_modified)
         return self.storage.path_for(f"validacao/{filename}")
