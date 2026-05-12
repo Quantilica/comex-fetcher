@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from comex_fetcher import download_all, get_complete, get_table, get_year, get_year_nbm
+from comex_fetcher import __version__, download_all, get_complete, get_table, get_year, get_year_nbm
 from comex_fetcher.constants import AUX_TABLES, TABLES
 
 
@@ -122,6 +122,11 @@ def set_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="comex-fetcher",
         description="Download Brazil's foreign trade data (SECEX/COMEX)."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     parser.set_defaults(func=lambda _: parser.print_help())
 
