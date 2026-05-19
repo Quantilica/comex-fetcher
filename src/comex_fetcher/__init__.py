@@ -98,8 +98,12 @@ def download_all(
     data_dir: Path,
     show_progress: bool = True,
     on_progress: Callable[[int, int], None] | None = None,
+    file_progress: ProgressCallback | None = None,
 ):
     """Download all available datasets."""
     download.download_all(
-        data_dir, show_progress=show_progress, on_progress=on_progress
+        data_dir,
+        show_progress=show_progress,
+        on_progress=on_progress,
+        file_progress=file_progress,
     )

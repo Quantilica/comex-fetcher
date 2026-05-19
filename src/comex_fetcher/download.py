@@ -117,6 +117,7 @@ def download_all(
     data_dir: Path,
     show_progress: bool = True,
     on_progress: Callable[[int, int], None] | None = None,
+    file_progress: ProgressCallback | None = None,
 ):
     """Download everything from all datasets."""
     from .storage import DataRepository
@@ -134,6 +135,9 @@ def download_all(
         if on_progress is not None:
             on_progress(done, total)
 
+    def _dl(url: str, dest: Path) -> None:
+        download_file(url, dest, show_progress=use_tqdm, progress=file_progress)
+
     outer = (
         batch_progress("comex-fetcher", total=total)
         if use_tqdm
@@ -146,7 +150,7 @@ def download_all(
             url = get_url(table_name)
             date = _safe_head_date(url)
             dest = repo.path_aux(table_name, last_modified=date)
-            download_file(url, dest, show_progress=use_tqdm)
+            _dl(url, dest)
             _tick(batch_pbar)
 
         # 2. Trade Data
@@ -170,7 +174,7 @@ def download_all(
                     )
                 else:
                     dest = repo.path_trade(dataset, year, last_modified=date)
-                download_file(url, dest, show_progress=use_tqdm)
+                _dl(url, dest)
                 _tick(batch_pbar)
 
         # 3. REPETRO
@@ -178,7 +182,7 @@ def download_all(
             url = get_url(dataset)
             date = _safe_head_date(url)
             dest = repo.path_repetro(dataset, last_modified=date)
-            download_file(url, dest, show_progress=use_tqdm)
+            _dl(url, dest)
             _tick(batch_pbar)
 
         # 4. Validation
@@ -186,7 +190,7 @@ def download_all(
             url = get_url(dataset)
             date = _safe_head_date(url)
             dest = repo.path_validacao(dataset, last_modified=date)
-            download_file(url, dest, show_progress=use_tqdm)
+            _dl(url, dest)
             _tick(batch_pbar)
 
         # 5. Other
@@ -195,7 +199,7 @@ def download_all(
         dest = repo.path_other(
             "tabelas-auxiliares", "xlsx", last_modified=date
         )
-        download_file(url, dest, show_progress=use_tqdm)
+        _dl(url, dest)
         _tick(batch_pbar)
 
 

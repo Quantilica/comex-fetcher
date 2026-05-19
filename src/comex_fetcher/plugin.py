@@ -316,29 +316,27 @@ def all_datasets(
             abort=True,
         )
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        TimeRemainingColumn(),
-        console=console,
-    ) as progress:
-        task = progress.add_task("[cyan]Baixando tudo...[/cyan]", total=None)
+    overall = _make_overall_progress()
+    file_prog = _make_file_progress()
+    overall_task = overall.add_task(
+        "[cyan]Baixando tudo...[/cyan]", total=None
+    )
+    file_task = file_prog.add_task("", total=None, visible=False)
 
-        def on_progress(done: int, total: int) -> None:
-            progress.update(
-                task,
-                completed=done,
-                total=total,
-                description=(f"[cyan]Baixando[/cyan]  [green]{done}✓[/green]"),
-            )
+    def on_progress(done: int, total: int) -> None:
+        overall.update(
+            overall_task,
+            completed=done,
+            total=total,
+            description=f"[cyan]Baixando[/cyan]  [green]{done}✓[/green]",
+        )
 
+    with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
         download_all(
             data_dir=output,
             show_progress=False,
             on_progress=on_progress,
+            file_progress=_file_callback(file_prog, file_task, "baixando..."),
         )
 
     console.print(
