@@ -10,7 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import quantilica_core.metadata as core_meta
-from quantilica_core.http import HttpClient
+from quantilica_core.http import HttpClient, ProgressCallback
 from quantilica_core.progress import batch_progress, file_progress
 
 from . import logger
@@ -45,10 +45,12 @@ def download_file(
     retry: int = 3,
     blocksize: int = 8192,
     show_progress: bool = False,
+    progress: ProgressCallback | None = None,
 ) -> Path:
     """Download a file from a URL to a specific output path using HttpClient.
 
     Uses quantilica-core for freshness check, atomic write, and manifest.
+    ``progress`` takes precedence over ``show_progress`` when both are set.
     """
     original_attempts = client.attempts
     if retry != original_attempts:
@@ -56,6 +58,15 @@ def download_file(
 
     try:
         dataset_id = output.parent.name
+        if progress is not None:
+            return client.download_with_manifest(
+                url,
+                output,
+                source_id="comexstat",
+                dataset_id=dataset_id,
+                producer="comex-fetcher",
+                progress=progress,
+            )
         if show_progress:
             with file_progress(output.name) as progress_cb:
                 return client.download_with_manifest(

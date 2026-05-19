@@ -7,16 +7,20 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from rich.console import Console
+from rich.console import Console, Group
+from rich.live import Live
 from rich.logging import RichHandler
 from rich.progress import (
     BarColumn,
+    DownloadColumn,
     MofNCompleteColumn,
     Progress,
     SpinnerColumn,
+    TaskID,
     TextColumn,
     TimeElapsedColumn,
     TimeRemainingColumn,
+    TransferSpeedColumn,
 )
 from rich.table import Table
 
@@ -27,6 +31,7 @@ from comex_fetcher import (
     get_year_nbm,
 )
 from comex_fetcher.constants import AUX_TABLES
+from quantilica_core.http import ProgressCallback
 
 app = typer.Typer(help="Dados de comércio exterior (SECEX/COMEX).")
 console = Console()
@@ -49,7 +54,7 @@ def _setup_logging(verbose: bool) -> None:
     )
 
 
-def _make_progress() -> Progress:
+def _make_overall_progress() -> Progress:
     return Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -59,6 +64,44 @@ def _make_progress() -> Progress:
         TimeRemainingColumn(),
         console=console,
     )
+
+
+def _make_file_progress() -> Progress:
+    return Progress(
+        SpinnerColumn(),
+        TextColumn(
+            "[dim]{task.description}[/dim]",
+            no_wrap=True,
+            overflow="ellipsis",
+        ),
+        BarColumn(),
+        DownloadColumn(),
+        TransferSpeedColumn(),
+        TimeRemainingColumn(),
+        console=console,
+    )
+
+
+def _file_callback(
+    file_progress: Progress,
+    task_id: TaskID,
+    description: str,
+) -> ProgressCallback:
+    """Return a ProgressCallback that feeds into a Rich file progress task."""
+
+    def callback(downloaded: int, total_bytes: int) -> None:
+        # (0, 0) fires at the start of each download attempt (including retries)
+        if downloaded == 0 and total_bytes == 0:
+            file_progress.reset(task_id)
+            file_progress.update(
+                task_id, description=description, visible=True
+            )
+            return
+        if total_bytes:
+            file_progress.update(task_id, total=total_bytes)
+        file_progress.update(task_id, completed=downloaded)
+
+    return callback
 
 
 def _expand_years(years: list[str]) -> list[int]:
@@ -131,11 +174,15 @@ def trade(
         console.print("[yellow]Nenhum ano válido informado.[/yellow]")
         raise typer.Exit(code=1)
 
-    with _make_progress() as progress:
-        task = progress.add_task(
-            "[cyan]Iniciando...[/cyan]", total=len(years_list)
-        )
-        ok = skipped = 0
+    overall = _make_overall_progress()
+    file_prog = _make_file_progress()
+    overall_task = overall.add_task(
+        "[cyan]Iniciando...[/cyan]", total=len(years_list)
+    )
+    file_task = file_prog.add_task("", total=None, visible=False)
+
+    ok = skipped = 0
+    with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
         for year in years_list:
             if year < 1989:
                 console.print(
@@ -143,20 +190,25 @@ def trade(
                     " dados não disponíveis antes de 1989."
                 )
                 skipped += 1
-                progress.update(
-                    task,
+                overall.update(
+                    overall_task,
                     advance=1,
                     description=f"[dim]{skipped} pulado(s)[/dim]",
                 )
                 continue
-            progress.update(task, description=f"[cyan]{year}[/cyan]")
+
+            overall.update(
+                overall_task, description=f"[cyan]{year}[/cyan]"
+            )
+            cb = _file_callback(file_prog, file_task, str(year))
+
             if year < 1997:
                 get_year_nbm(
                     data_dir=output,
                     year=year,
                     exp=exp,
                     imp=imp,
-                    show_progress=False,
+                    progress=cb,
                 )
             else:
                 get_year(
@@ -165,11 +217,13 @@ def trade(
                     exp=exp,
                     imp=imp,
                     mun=municipality,
-                    show_progress=False,
+                    progress=cb,
                 )
+
+            file_prog.update(file_task, visible=False)
             ok += 1
-            progress.update(
-                task,
+            overall.update(
+                overall_task,
                 advance=1,
                 description=(
                     f"[green]{ok}✓[/green]  [dim]{skipped} skip[/dim]"
@@ -222,14 +276,20 @@ def table_cmd(
         console.print("[yellow]Nenhuma tabela válida informada.[/yellow]")
         return
 
-    with _make_progress() as progress:
-        task = progress.add_task(
-            "[cyan]Baixando tabelas...[/cyan]", total=len(to_download)
-        )
+    overall = _make_overall_progress()
+    file_prog = _make_file_progress()
+    overall_task = overall.add_task(
+        "[cyan]Baixando tabelas...[/cyan]", total=len(to_download)
+    )
+    file_task = file_prog.add_task("", total=None, visible=False)
+
+    with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
         for name in to_download:
-            progress.update(task, description=f"[cyan]{name}[/cyan]")
-            get_table(data_dir=output, table=name, show_progress=False)
-            progress.update(task, advance=1)
+            overall.update(overall_task, description=f"[cyan]{name}[/cyan]")
+            cb = _file_callback(file_prog, file_task, name)
+            get_table(data_dir=output, table=name, progress=cb)
+            file_prog.update(file_task, visible=False)
+            overall.update(overall_task, advance=1)
 
     n = len(to_download)
     console.print(
