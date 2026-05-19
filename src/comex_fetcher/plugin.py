@@ -62,7 +62,6 @@ def _make_overall_progress() -> Progress:
         MofNCompleteColumn(),
         TimeElapsedColumn(),
         TimeRemainingColumn(),
-        console=console,
     )
 
 
@@ -78,7 +77,6 @@ def _make_file_progress() -> Progress:
         DownloadColumn(),
         TransferSpeedColumn(),
         TimeRemainingColumn(),
-        console=console,
     )
 
 
@@ -318,7 +316,15 @@ def all_datasets(
             abort=True,
         )
 
-    with _make_overall_progress() as progress:
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+        console=console,
+    ) as progress:
         task = progress.add_task("[cyan]Baixando tudo...[/cyan]", total=None)
 
         def on_progress(done: int, total: int) -> None:
