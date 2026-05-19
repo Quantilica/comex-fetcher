@@ -143,13 +143,17 @@ TABLES = {
         "name": "CUCI - Classificação Uniforme para Comércio Internacional",
     },
     "cgce": {
-        "description": ("Códigos e descrições dos níveis da classificação CGCE."),
+        "description": (
+            "Códigos e descrições dos níveis da classificação CGCE."
+        ),
         "file_ref": "NCM_CGCE.csv",
         "pkey": ["CO_CGCE_N3"],
         "name": "CGCE - Classificação por Grandes Categorias Econômicas",
     },
     "isic": {
-        "description": ("Códigos e descrições da classificação ISIC (Revisão 4)."),
+        "description": (
+            "Códigos e descrições da classificação ISIC (Revisão 4)."
+        ),
         "file_ref": "NCM_ISIC.csv",
         "pkey": ["CO_ISIC_CLASSE"],
         "name": (
@@ -173,7 +177,9 @@ TABLES = {
         "name": "Fator Agregado da NCM - Classificação própria da SECEX",
     },
     "unidade": {
-        "description": ("Códigos e descrições das unidades estatísticas das NCMs."),
+        "description": (
+            "Códigos e descrições das unidades estatísticas das NCMs."
+        ),
         "file_ref": "NCM_UNIDADE.csv",
         "pkey": ["CO_UNID"],
         "name": "Unidade Estatística da NCM",
@@ -185,7 +191,9 @@ TABLES = {
         ),
         "file_ref": "NCM_PPI.csv",
         "pkey": ["CO_PPI"],
-        "name": ("Pauta de Produtos Importados - Classificação própria da SECEX"),
+        "name": (
+            "Pauta de Produtos Importados - Classificação própria da SECEX"
+        ),
     },
     "ppe": {
         "description": (
@@ -194,7 +202,9 @@ TABLES = {
         ),
         "file_ref": "NCM_PPE.csv",
         "pkey": ["CO_PPE"],
-        "name": ("Pauta de Produtos Exportados - Classificação própria da SECEX"),
+        "name": (
+            "Pauta de Produtos Exportados - Classificação própria da SECEX"
+        ),
     },
     "grupo": {
         "description": (
@@ -298,7 +308,9 @@ REPETRO_TABLES = {
 
 OTHER_TABLES = {
     "tabelas-auxiliares": {
-        "description": ("Tabelas de Correlações de Códigos e Classificações em Excel"),
+        "description": (
+            "Tabelas de Correlações de Códigos e Classificações em Excel"
+        ),
         "server_filename": "TABELAS_AUXILIARES.xlsx",
         "pkey": [],
         "name": "Tabelas de Correlações de Códigos e Classificações",

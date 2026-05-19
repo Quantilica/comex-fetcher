@@ -47,7 +47,9 @@ def get_url(table_name: str, **kwargs) -> str:
     year = kwargs.get("year")
 
     if table_name in TRADE:
-        return TRADE[table_name]["server_dir"] + TRADE[table_name]["server_filename"].format(year=year)
+        return TRADE[table_name]["server_dir"] + TRADE[table_name][
+            "server_filename"
+        ].format(year=year)
 
     if table_name in ARQUIVO_UNICO:
         return ARQUIVO_UNICO[table_name]["url"]
