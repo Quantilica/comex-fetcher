@@ -318,7 +318,7 @@ def all_datasets(
             abort=True,
         )
 
-    with _make_progress() as progress:
+    with _make_overall_progress() as progress:
         task = progress.add_task("[cyan]Baixando tudo...[/cyan]", total=None)
 
         def on_progress(done: int, total: int) -> None:
