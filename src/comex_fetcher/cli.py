@@ -16,7 +16,6 @@ from quantilica_core.logging import configure_cli_logging
 from comex_fetcher import (
     __version__,
     download_all,
-    get_complete,
     get_table,
     get_year,
     get_year_nbm,
@@ -53,19 +52,6 @@ def handle_trade(args: argparse.Namespace):
         exp = imp = True
     else:
         exp, imp = args.exp, args.imp
-
-    if args.years == ["complete"]:
-        logger.info(
-            f"Downloading complete historical datasets to {args.output}..."
-        )
-        get_complete(
-            data_dir=args.output,
-            exp=exp,
-            imp=imp,
-            mun=args.mun,
-            show_progress=show_progress,
-        )
-        return
 
     years = expand_years(args.years)
     for year in years:
@@ -194,7 +180,7 @@ def get_parser() -> argparse.ArgumentParser:
     trade_parser.add_argument(
         "years",
         nargs="+",
-        help="Years (e.g. 2020), ranges (2018:2020), or 'complete'",
+        help="Years (e.g. 2020) or ranges (2018:2020)",
     )
     trade_parser.add_argument(
         "-exp", "--exports", action="store_true", help="Download exports only"

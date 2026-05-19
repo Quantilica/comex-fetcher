@@ -350,33 +350,3 @@ TOTAIS_PARA_VALIDACAO = {
     },
 }
 
-ARQUIVO_UNICO = {
-    "exp-completa": {
-        "description": "Arquivo completo de Exportações",
-        "server_filename": "EXP_COMPLETA.zip",
-        "pkey": [],
-        "name": "Arquivo completo de Exportações",
-        "url": BASE_URL + "comexstat-bd/ncm/EXP_COMPLETA.zip",
-    },
-    "imp-completa": {
-        "description": "Arquivo completo de Importações",
-        "server_filename": "IMP_COMPLETA.zip",
-        "pkey": [],
-        "name": "Arquivo completo de Importações",
-        "url": BASE_URL + "comexstat-bd/ncm/IMP_COMPLETA.zip",
-    },
-    "exp-mun-completa": {
-        "description": "Arquivo completo de Exportações municipais.",
-        "server_filename": "EXP_COMPLETA_MUN.zip",
-        "pkey": [],
-        "name": "Arquivo completo de Exportações municipais.",
-        "url": BASE_URL + "comexstat-bd/mun/EXP_COMPLETA_MUN.zip",
-    },
-    "imp-mun-completa": {
-        "description": "Arquivo completo de Importações municipais.",
-        "server_filename": "IMP_COMPLETA_MUN.zip",
-        "pkey": [],
-        "name": "Arquivo completo de Importações municipais.",
-        "url": BASE_URL + "comexstat-bd/mun/IMP_COMPLETA_MUN.zip",
-    },
-}

@@ -5,7 +5,6 @@ types of foreign trade data from the Brazilian Ministry of Economy servers.
 """
 
 from .constants import (
-    ARQUIVO_UNICO,
     AUX_TABLES,
     BASE_URL,
     OTHER_TABLES,
@@ -34,14 +33,6 @@ def trade(
     return get_url(direction.lower(), year=year)
 
 
-def complete(direction: str, mun: bool = False) -> str:
-    """Generate URL for complete historical trade dataset."""
-    key = f"{direction.lower()}-completa"
-    if mun:
-        key = f"{direction.lower()}-mun-completa"
-    return get_url(key)
-
-
 def get_url(table_name: str, **kwargs) -> str:
     """Centralized URL generation logic."""
     year = kwargs.get("year")
@@ -50,9 +41,6 @@ def get_url(table_name: str, **kwargs) -> str:
         return TRADE[table_name]["server_dir"] + TRADE[table_name][
             "server_filename"
         ].format(year=year)
-
-    if table_name in ARQUIVO_UNICO:
-        return ARQUIVO_UNICO[table_name]["url"]
 
     if table_name in TOTAIS_PARA_VALIDACAO:
         return TOTAIS_PARA_VALIDACAO[table_name]["url"]

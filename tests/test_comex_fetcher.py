@@ -23,13 +23,6 @@ class TestFunctions(unittest.TestCase):
         comex_fetcher.get_year_nbm(self.path, 2000, exp=True, imp=True)
         self.assertEqual(mock_download_file.call_count, 2)
 
-    def test_get_complete(self, mock_download_file):
-        comex_fetcher.get_complete(self.path, exp=True, imp=True)
-        self.assertEqual(mock_download_file.call_count, 2)
-
-        comex_fetcher.get_complete(self.path, exp=True, imp=True, mun=True)
-        self.assertEqual(mock_download_file.call_count, 4)
-
     def test_get_table(self, mock_download_file):
         comex_fetcher.get_table(self.path, "ncm")
         mock_download_file.assert_called_once()

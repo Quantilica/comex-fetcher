@@ -15,7 +15,6 @@ from quantilica_core.progress import batch_progress, file_progress
 
 from . import logger
 from .constants import (
-    ARQUIVO_UNICO,
     REPETRO_TABLES,
     TABLES,
     TOTAIS_PARA_VALIDACAO,
@@ -97,7 +96,6 @@ def _count_download_all_files() -> int:
         if end_year is None:
             end_year = CURRENT_YEAR
         count += end_year - start_year + 1
-    count += len(ARQUIVO_UNICO)
     count += len(REPETRO_TABLES)
     count += len(TOTAIS_PARA_VALIDACAO)
     count += 1  # tabelas-auxiliares
@@ -164,19 +162,7 @@ def download_all(
                 download_file(url, dest, show_progress=use_tqdm)
                 _tick(batch_pbar)
 
-        # 3. Complete Files
-        for dataset in ARQUIVO_UNICO:
-            url = get_url(dataset)
-            date = _safe_head_date(url)
-            direction = dataset.split("-")[0]
-            mun = "mun" in dataset
-            dest = repo.path_trade_completa(
-                direction, mun=mun, last_modified=date
-            )
-            download_file(url, dest, show_progress=use_tqdm)
-            _tick(batch_pbar)
-
-        # 4. REPETRO
+        # 3. REPETRO
         for dataset in REPETRO_TABLES:
             url = get_url(dataset)
             date = _safe_head_date(url)
@@ -184,7 +170,7 @@ def download_all(
             download_file(url, dest, show_progress=use_tqdm)
             _tick(batch_pbar)
 
-        # 5. Validation
+        # 4. Validation
         for dataset in TOTAIS_PARA_VALIDACAO:
             url = get_url(dataset)
             date = _safe_head_date(url)
@@ -192,7 +178,7 @@ def download_all(
             download_file(url, dest, show_progress=use_tqdm)
             _tick(batch_pbar)
 
-        # 6. Other
+        # 5. Other
         url = get_url("tabelas-auxiliares")
         date = _safe_head_date(url)
         dest = repo.path_other(

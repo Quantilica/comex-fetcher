@@ -22,7 +22,6 @@ from rich.table import Table
 
 from comex_fetcher import (
     download_all,
-    get_complete,
     get_table,
     get_year,
     get_year_nbm,
@@ -87,7 +86,7 @@ def trade(
     years: Annotated[
         list[str],
         typer.Argument(
-            help="Anos (ex: 2020), intervalos (2018:2020) ou 'complete'"
+            help="Anos (ex: 2020) ou intervalos (2018:2020)"
         ),
     ],
     output: Annotated[
@@ -126,22 +125,6 @@ def trade(
     exp = imp = True
     if exports or imports:
         exp, imp = exports, imports
-
-    if years == ["complete"]:
-        status_msg = "[cyan]Baixando dados históricos completos...[/cyan]"
-        with console.status(status_msg):
-            get_complete(
-                data_dir=output,
-                exp=exp,
-                imp=imp,
-                mun=municipality,
-                show_progress=False,
-            )
-        console.print(
-            "[green]✓[/green] Dados históricos completos"
-            f" baixados em [dim]{output}[/dim]"
-        )
-        return
 
     years_list = _expand_years(years)
     if not years_list:

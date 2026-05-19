@@ -99,26 +99,6 @@ class DataRepository(BaseDataRepository):
         filename = stamp_filename(f"{dataset}_{year}", "csv", last_modified)
         return self.storage.path_for(f"{dataset}/{filename}")
 
-    def path_trade_completa(
-        self,
-        direction: str,
-        mun: bool = False,
-        *,
-        last_modified: dt.date | None = None,
-    ) -> Path:
-        """Path for a complete historical trade data archive.
-
-        Examples:
-            ``exp/exp_completa@20240315.zip``
-            ``exp-mun/exp-mun_completa@20240315.zip``
-        """
-        direction = direction.lower()
-        if direction not in ("exp", "imp"):
-            raise ValueError(f"Invalid argument direction={direction!r}")
-        dataset = f"{direction}-mun" if mun else direction
-        filename = stamp_filename(f"{dataset}_completa", "zip", last_modified)
-        return self.storage.path_for(f"{dataset}/{filename}")
-
     # ------------------------------------------------------------------
     # REPETRO and validation
     # ------------------------------------------------------------------

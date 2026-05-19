@@ -71,33 +71,6 @@ def get_year_nbm(
         download.download_file(url, file_path, show_progress=show_progress)
 
 
-def get_complete(
-    data_dir: Path,
-    exp=False,
-    imp=False,
-    mun=False,
-    show_progress: bool = False,
-):
-    """Download complete historical trade data."""
-    if not exp and not imp:
-        exp = imp = True
-    directions = []
-    if exp:
-        directions.append("exp")
-    if imp:
-        directions.append("imp")
-
-    repo = storage.DataRepository(root=data_dir)
-
-    for direction in directions:
-        url = urls.complete(direction=direction, mun=mun)
-        date = download._safe_head_date(url)
-        file_path = repo.path_trade_completa(
-            direction=direction, mun=mun, last_modified=date
-        )
-        download.download_file(url, file_path, show_progress=show_progress)
-
-
 def get_table(data_dir: Path, table: str, show_progress: bool = False):
     """Download an auxiliary code table."""
     url = urls.table(table)
