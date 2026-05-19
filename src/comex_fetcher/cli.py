@@ -7,6 +7,7 @@ from Brazil's Ministry of Economy (SECEX/COMEX).
 """
 
 import argparse
+import datetime as dt
 import logging
 import sys
 from pathlib import Path
@@ -15,13 +16,15 @@ from quantilica_core.logging import configure_cli_logging
 
 from comex_fetcher import (
     __version__,
-    download_all,
     get_table,
     get_year,
     get_year_nbm,
     logger,
 )
 from comex_fetcher.constants import AUX_TABLES, TABLES
+
+_DEFAULT_OUTPUT = Path("/data/secex-comex")
+_MIN_YEAR = 1989
 
 
 def expand_years(args_years: list[str]) -> list[int]:
@@ -45,101 +48,74 @@ def expand_years(args_years: list[str]) -> list[int]:
     return years
 
 
-def handle_trade(args: argparse.Namespace):
-    """Handle the 'trade' subcommand."""
+def handle_sync(args: argparse.Namespace):
+    """Handle the 'sync' subcommand."""
     show_progress = not args.verbose
     if not args.exp and not args.imp:
         exp = imp = True
     else:
         exp, imp = args.exp, args.imp
 
-    years = expand_years(args.years)
-    for year in years:
-        if year < 1989:
-            logger.warning(
-                f"Skipping year {year}: Data not available before 1989."
-            )
-            continue
+    if args.years:
+        years = [y for y in expand_years(args.years) if y >= _MIN_YEAR]
+    else:
+        years = list(range(_MIN_YEAR, dt.datetime.now().year + 1))
 
-        if year < 1997:
-            if args.mun:
-                logger.warning(
-                    f"Note: Municipality data not available for {year}. Downloading national data."
-                )
-            get_year_nbm(
-                data_dir=args.output,
-                year=year,
-                exp=exp,
-                imp=imp,
-                show_progress=show_progress,
-            )
-        else:
-            get_year(
-                data_dir=args.output,
-                year=year,
-                exp=exp,
-                imp=imp,
-                mun=args.mun,
-                show_progress=show_progress,
-            )
+    do_trade = not args.tables_only
+    do_tables = not args.no_tables
+    table_names = list(AUX_TABLES.keys())
 
-
-def handle_table(args: argparse.Namespace):
-    """Handle the 'table' subcommand."""
-    if not args.tables:
-        print_code_tables()
+    if args.dry_run:
+        if do_trade:
+            for year in years:
+                print(f"transações  {year}")
+        if do_tables:
+            for name in table_names:
+                print(f"tabela      {name}")
+        n = (len(years) if do_trade else 0) + (
+            len(table_names) if do_tables else 0
+        )
+        print(f"Total: {n} item(ns)")
         return
 
-    tables_to_download = []
-    if "all" in args.tables:
-        tables_to_download = list(AUX_TABLES.keys())
-    else:
-        for t in args.tables:
-            if t in AUX_TABLES:
-                tables_to_download.append(t)
+    if do_trade:
+        for year in years:
+            if year < 1997:
+                get_year_nbm(
+                    data_dir=args.output,
+                    year=year,
+                    exp=exp,
+                    imp=imp,
+                    show_progress=show_progress,
+                )
             else:
-                logger.warning(
-                    f"Table '{t}' not found. Use 'comex-fetcher table' without arguments to see available tables."
+                get_year(
+                    data_dir=args.output,
+                    year=year,
+                    exp=exp,
+                    imp=imp,
+                    mun=args.mun,
+                    show_progress=show_progress,
                 )
 
-    if not tables_to_download:
-        return
-
-    logger.info(
-        f"Downloading {len(tables_to_download)} tables to {args.output}..."
-    )
-    for table in tables_to_download:
-        try:
-            get_table(
-                data_dir=args.output,
-                table=table,
-                show_progress=not args.verbose,
-            )
-        except Exception as e:
-            logger.error(f"Error downloading table '{table}': {e}")
+    if do_tables:
+        for table in table_names:
+            try:
+                get_table(
+                    data_dir=args.output,
+                    table=table,
+                    show_progress=show_progress,
+                )
+            except Exception as e:
+                logger.error(f"Error downloading table '{table}': {e}")
 
 
-def handle_all(args: argparse.Namespace):
-    """Handle the 'all' subcommand."""
-    logger.info(
-        f"Downloading ALL available datasets to {args.output}. This may take a long time and use several GBs of space."
-    )
-    confirm = (
-        input("Continue? [y/N]: ") if not getattr(args, "yes", False) else "y"
-    )
-    if confirm.lower() == "y":
-        download_all(data_dir=args.output, show_progress=not args.verbose)
-    else:
-        print("Aborted.")
-
-
-def print_code_tables():
-    """Print available auxiliary code tables."""
+def handle_list(args: argparse.Namespace):
+    """Handle the 'list' subcommand."""
     print("\nAvailable code tables:")
     for table, info in TABLES.items():
         print(f"\n  {table: <11} {info['name']}")
         desc = info["description"]
-        # Simple word wrap
         words = desc.split()
         line = " " * 13
         for word in words:
@@ -173,69 +149,60 @@ def get_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(title="commands", dest="command")
 
-    # Trade command
-    trade_parser = subparsers.add_parser(
-        "trade", help="Download trade transaction data (NCM/NBM)"
+    # sync
+    sync_parser = subparsers.add_parser(
+        "sync",
+        help="Sincronizar dados de comércio exterior (transações + tabelas)",
     )
-    trade_parser.add_argument(
+    sync_parser.add_argument(
         "years",
-        nargs="+",
-        help="Years (e.g. 2020) or ranges (2018:2020)",
+        nargs="*",
+        help=(
+            "Anos (ex: 2020) ou intervalos (2018:2020)."
+            f" Padrão: todos desde {_MIN_YEAR}."
+        ),
     )
-    trade_parser.add_argument(
-        "-exp", "--exports", action="store_true", help="Download exports only"
+    sync_parser.add_argument(
+        "-exp", "--exports", action="store_true", help="Apenas exportações"
     )
-    trade_parser.add_argument(
-        "-imp", "--imports", action="store_true", help="Download imports only"
+    sync_parser.add_argument(
+        "-imp", "--imports", action="store_true", help="Apenas importações"
     )
-    trade_parser.add_argument(
+    sync_parser.add_argument(
         "-mun",
         "--municipality",
         action="store_true",
-        help="Download municipality-level data (1997+)",
+        help="Dados municipais (1997+)",
     )
-    trade_parser.add_argument(
+    sync_parser.add_argument(
+        "--no-tables",
+        action="store_true",
+        help="Não baixar as tabelas auxiliares de códigos",
+    )
+    sync_parser.add_argument(
+        "--tables-only",
+        action="store_true",
+        help="Baixar apenas as tabelas auxiliares",
+    )
+    sync_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Listar sem baixar",
+    )
+    sync_parser.add_argument(
         "-o",
         "--output",
         type=Path,
-        default=Path("/data/secex-comex"),
-        help="Output directory",
+        default=_DEFAULT_OUTPUT,
+        help="Diretório de saída",
     )
-    trade_parser.set_defaults(func=handle_trade)
+    sync_parser.set_defaults(func=handle_sync)
 
-    # Table command
-    table_parser = subparsers.add_parser(
-        "table", help="Download auxiliary code tables"
+    # list
+    list_parser = subparsers.add_parser(
+        "list", help="Listar tabelas auxiliares de códigos disponíveis"
     )
-    table_parser.add_argument(
-        "tables",
-        nargs="*",
-        help="Table names or 'all'. Leave empty to list available tables.",
-    )
-    table_parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        default=Path("/data/secex-comex"),
-        help="Output directory",
-    )
-    table_parser.set_defaults(func=handle_table)
-
-    # All command
-    all_parser = subparsers.add_parser(
-        "all", help="Download EVERYTHING (all years, all tables, all datasets)"
-    )
-    all_parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        default=Path("/data/secex-comex"),
-        help="Output directory",
-    )
-    all_parser.add_argument(
-        "-y", "--yes", action="store_true", help="Skip confirmation prompt"
-    )
-    all_parser.set_defaults(func=handle_all)
+    list_parser.set_defaults(func=handle_list)
 
     return parser
 
@@ -247,6 +214,11 @@ def main():
     configure_cli_logging(verbose=args.verbose)
     if not args.verbose:
         logging.getLogger().setLevel(logging.WARNING)
+
+    # argparse stores the dest as 'exports'/'imports'; expose short aliases.
+    args.exp = getattr(args, "exports", False)
+    args.imp = getattr(args, "imports", False)
+    args.mun = getattr(args, "municipality", False)
 
     try:
         args.func(args)

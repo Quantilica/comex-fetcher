@@ -1,7 +1,5 @@
 import argparse
 import unittest
-from collections import namedtuple
-from pathlib import Path
 from unittest import mock
 
 from comex_fetcher import cli
@@ -9,8 +7,8 @@ from comex_fetcher import cli
 
 class TestCliFunctions(unittest.TestCase):
 
-    def test_set_parser(self):
-        parser = cli.set_parser()
+    def test_get_parser(self):
+        parser = cli.get_parser()
         self.assertIsInstance(parser, argparse.ArgumentParser)
 
     def test_expand_years(self):
@@ -40,39 +38,42 @@ class TestCliFunctions(unittest.TestCase):
             [2010] + [2005, 2004, 2003, 2002, 2001, 2000]
         )
 
-    @mock.patch("comex_fetcher.cli.set_parser")
-    def test_main(self, mock_set_parser):
+    @mock.patch("comex_fetcher.cli.get_parser")
+    def test_main(self, mock_get_parser):
         cli.main()
-        mock_set_parser.assert_called()
-        parser = mock_set_parser.return_value
+        mock_get_parser.assert_called()
+        parser = mock_get_parser.return_value
         parser.parse_args.assert_called()
         args = parser.parse_args.return_value
         args.func.assert_called()
 
 
-class TestCliDownloadTrade(unittest.TestCase):
+class TestCliSync(unittest.TestCase):
 
     def setUp(self):
-        self.parser = cli.set_parser()
-        self.Args = namedtuple("Args", ["exp", "imp", "mun"])
-        self.o = "./data"
+        self.parser = cli.get_parser()
+
+    def test_sync_defaults(self):
+        args = self.parser.parse_args(["sync"])
+        self.assertEqual(args.func, cli.handle_sync)
+        self.assertEqual(args.years, [])
+        self.assertFalse(args.no_tables)
+        self.assertFalse(args.tables_only)
+        self.assertFalse(args.dry_run)
+
+    def test_sync_with_years(self):
+        args = self.parser.parse_args(["sync", "2020", "2022:2024"])
+        self.assertListEqual(args.years, ["2020", "2022:2024"])
 
 
-class TestCliDownloadCode(unittest.TestCase):
+class TestCliList(unittest.TestCase):
 
     def setUp(self):
-        self.parser = cli.set_parser()
-        self.o = Path(".", "data")
+        self.parser = cli.get_parser()
 
-    @mock.patch("comex_fetcher.cli.print_code_tables")
-    def test_download_table_print_code_tables(self, mock_print_code_tables):
-        self.args = self.parser.parse_args(
-            [
-                "table",
-            ]
-        )
-        self.args.func(self.args)
-        mock_print_code_tables.assert_called()
+    def test_list_dispatches(self):
+        args = self.parser.parse_args(["list"])
+        self.assertIs(args.func, cli.handle_list)
 
 
 if __name__ == "__main__":

@@ -36,26 +36,31 @@ comex_fetcher.get_table(data_dir, table="ncm")
 comex-fetcher <comando> [argumentos]
 
 Comandos:
-  trade ANOS [-exp] [-imp] [-mun] [-o CAMINHO]
-        Baixar transações comerciais para um ano, intervalo (2018:2023) ou
-        'complete'. -exp/-imp restringem a direção; padrão baixa ambas.
-        -mun adiciona dados no nível municipal (1997+).
-  table [TABELAS...] [-o CAMINHO]
-        Baixar tabelas de códigos auxiliares.
-        Execute sem argumentos para listar as disponíveis.
-  all [-y] [-o CAMINHO]
-        Baixar tudo. Pede confirmação exceto com -y.
+  sync [ANOS...] [-exp] [-imp] [-mun] [--no-tables] [--tables-only] [--dry-run] [-o CAMINHO]
+        Sincronizar transações comerciais e tabelas auxiliares. Sem ANOS,
+        baixa todos os anos desde 1989; aceita anos (2023) e intervalos
+        (2018:2023). -exp/-imp restringem a direção; padrão baixa ambas.
+        -mun adiciona dados no nível municipal (1997+). --no-tables pula as
+        tabelas; --tables-only baixa apenas as tabelas; --dry-run lista sem
+        baixar.
+  list  Listar as tabelas de códigos auxiliares disponíveis.
 ```
 
 ```bash
-# Exportações + importações de 2023
-comex-fetcher trade 2023 -o ./dados
+# Exportações + importações de 2023 (+ tabelas auxiliares)
+comex-fetcher sync 2023 -o ./dados
 
 # Apenas importações, 2018–2023, com dados municipais
-comex-fetcher trade 2018:2023 -imp -mun -o ./dados
+comex-fetcher sync 2018:2023 -imp -mun -o ./dados
 
-# Todas as tabelas auxiliares
-comex-fetcher table all -o ./dados
+# Apenas as tabelas auxiliares de códigos
+comex-fetcher sync --tables-only -o ./dados
+
+# Tudo: todos os anos + todas as tabelas
+comex-fetcher sync -o ./dados
+
+# Listar tabelas auxiliares disponíveis
+comex-fetcher list
 ```
 
 ## API Python
