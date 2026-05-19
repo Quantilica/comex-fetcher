@@ -1,5 +1,6 @@
 """Brazil's foreign trade data downloader"""
 
+from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -37,7 +38,9 @@ def get_year(
     for direction in directions:
         url = urls.trade(direction=direction, year=year, mun=mun)
         date = download._safe_head_date(url)
-        file_path = repo.path_trade(direction=direction, year=year, mun=mun, last_modified=date)
+        file_path = repo.path_trade(
+            direction=direction, year=year, mun=mun, last_modified=date
+        )
         download.download_file(url, file_path, show_progress=show_progress)
 
 
@@ -62,7 +65,9 @@ def get_year_nbm(
     for direction in directions:
         url = urls.trade(direction=direction, year=year, nbm=True)
         date = download._safe_head_date(url)
-        file_path = repo.path_trade_nbm(direction=direction, year=year, last_modified=date)
+        file_path = repo.path_trade_nbm(
+            direction=direction, year=year, last_modified=date
+        )
         download.download_file(url, file_path, show_progress=show_progress)
 
 
@@ -87,7 +92,9 @@ def get_complete(
     for direction in directions:
         url = urls.complete(direction=direction, mun=mun)
         date = download._safe_head_date(url)
-        file_path = repo.path_trade_completa(direction=direction, mun=mun, last_modified=date)
+        file_path = repo.path_trade_completa(
+            direction=direction, mun=mun, last_modified=date
+        )
         download.download_file(url, file_path, show_progress=show_progress)
 
 
@@ -100,6 +107,12 @@ def get_table(data_dir: Path, table: str, show_progress: bool = False):
     download.download_file(url, file_path, show_progress=show_progress)
 
 
-def download_all(data_dir: Path, show_progress: bool = True):
+def download_all(
+    data_dir: Path,
+    show_progress: bool = True,
+    on_progress: Callable[[int, int], None] | None = None,
+):
     """Download all available datasets."""
-    download.download_all(data_dir, show_progress=show_progress)
+    download.download_all(
+        data_dir, show_progress=show_progress, on_progress=on_progress
+    )

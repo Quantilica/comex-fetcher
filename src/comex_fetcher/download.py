@@ -6,10 +6,11 @@ government's foreign trade data servers.
 
 import contextlib
 import datetime as dt
+from collections.abc import Callable
 from pathlib import Path
 
-from quantilica_core.http import HttpClient
 import quantilica_core.metadata as core_meta
+from quantilica_core.http import HttpClient
 from quantilica_core.progress import batch_progress, file_progress
 
 from . import logger
@@ -35,7 +36,7 @@ client = HttpClient(
             "AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/142.0.0.0 Safari/537.36"
         ),
-    }
+    },
 )
 
 
@@ -103,15 +104,30 @@ def _count_download_all_files() -> int:
     return count
 
 
-def download_all(data_dir: Path, show_progress: bool = True):
+def download_all(
+    data_dir: Path,
+    show_progress: bool = True,
+    on_progress: Callable[[int, int], None] | None = None,
+):
     """Download everything from all datasets."""
     from .storage import DataRepository
 
     repo = DataRepository(data_dir)
     total = _count_download_all_files()
+    done = 0
+    use_tqdm = show_progress and on_progress is None
+
+    def _tick(batch_pbar) -> None:
+        nonlocal done
+        done += 1
+        if use_tqdm and batch_pbar is not None:
+            batch_pbar.update(1)
+        if on_progress is not None:
+            on_progress(done, total)
+
     outer = (
         batch_progress("comex-fetcher", total=total)
-        if show_progress
+        if use_tqdm
         else contextlib.nullcontext()
     )
 
@@ -121,9 +137,8 @@ def download_all(data_dir: Path, show_progress: bool = True):
             url = get_url(table_name)
             date = _safe_head_date(url)
             dest = repo.path_aux(table_name, last_modified=date)
-            download_file(url, dest, show_progress=show_progress)
-            if show_progress:
-                batch_pbar.update(1)
+            download_file(url, dest, show_progress=use_tqdm)
+            _tick(batch_pbar)
 
         # 2. Trade Data
         for dataset in TRADE:
@@ -134,14 +149,20 @@ def download_all(data_dir: Path, show_progress: bool = True):
                 url = get_url(dataset, year=year)
                 date = _safe_head_date(url)
                 if "mun" in dataset:
-                    dest = repo.path_trade(dataset.split("-")[0], year, mun=True, last_modified=date)
+                    dest = repo.path_trade(
+                        dataset.split("-")[0],
+                        year,
+                        mun=True,
+                        last_modified=date,
+                    )
                 elif "nbm" in dataset:
-                    dest = repo.path_trade_nbm(dataset.split("-")[0], year, last_modified=date)
+                    dest = repo.path_trade_nbm(
+                        dataset.split("-")[0], year, last_modified=date
+                    )
                 else:
                     dest = repo.path_trade(dataset, year, last_modified=date)
-                download_file(url, dest, show_progress=show_progress)
-                if show_progress:
-                    batch_pbar.update(1)
+                download_file(url, dest, show_progress=use_tqdm)
+                _tick(batch_pbar)
 
         # 3. Complete Files
         for dataset in ARQUIVO_UNICO:
@@ -149,39 +170,41 @@ def download_all(data_dir: Path, show_progress: bool = True):
             date = _safe_head_date(url)
             direction = dataset.split("-")[0]
             mun = "mun" in dataset
-            dest = repo.path_trade_completa(direction, mun=mun, last_modified=date)
-            download_file(url, dest, show_progress=show_progress)
-            if show_progress:
-                batch_pbar.update(1)
+            dest = repo.path_trade_completa(
+                direction, mun=mun, last_modified=date
+            )
+            download_file(url, dest, show_progress=use_tqdm)
+            _tick(batch_pbar)
 
         # 4. REPETRO
         for dataset in REPETRO_TABLES:
             url = get_url(dataset)
             date = _safe_head_date(url)
             dest = repo.path_repetro(dataset, last_modified=date)
-            download_file(url, dest, show_progress=show_progress)
-            if show_progress:
-                batch_pbar.update(1)
+            download_file(url, dest, show_progress=use_tqdm)
+            _tick(batch_pbar)
 
         # 5. Validation
         for dataset in TOTAIS_PARA_VALIDACAO:
             url = get_url(dataset)
             date = _safe_head_date(url)
             dest = repo.path_validacao(dataset, last_modified=date)
-            download_file(url, dest, show_progress=show_progress)
-            if show_progress:
-                batch_pbar.update(1)
+            download_file(url, dest, show_progress=use_tqdm)
+            _tick(batch_pbar)
 
         # 6. Other
         url = get_url("tabelas-auxiliares")
         date = _safe_head_date(url)
-        dest = repo.path_other("tabelas-auxiliares", "xlsx", last_modified=date)
-        download_file(url, dest, show_progress=show_progress)
-        if show_progress:
-            batch_pbar.update(1)
+        dest = repo.path_other(
+            "tabelas-auxiliares", "xlsx", last_modified=date
+        )
+        download_file(url, dest, show_progress=use_tqdm)
+        _tick(batch_pbar)
 
 
-def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:
+def generate_catalog(
+    downloaded_files: list[Path],
+) -> core_meta.MetadataCatalog:
     """Generate a validated MetadataCatalog from a list of downloaded file paths."""
     source_id = "comexstat"
     source = core_meta.Source(
@@ -192,7 +215,7 @@ def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:
 
     datasets_map = {}
     resources = []
-    
+
     for file_path in downloaded_files:
         # Determine dataset from parent directory name
         dataset_id = file_path.parent.name
@@ -202,10 +225,10 @@ def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:
                 source_id=source_id,
                 name=dataset_id.upper().replace("-", " "),
             )
-            
+
         filename = file_path.name
         resource_id = filename.replace(".", "_")
-        
+
         resources.append(
             core_meta.Resource(
                 id=resource_id,
@@ -215,7 +238,7 @@ def generate_catalog(downloaded_files: list[Path]) -> core_meta.MetadataCatalog:
                 path=str(file_path.absolute()),
             )
         )
-        
+
     catalog = core_meta.MetadataCatalog(
         sources=[source],
         datasets=list(datasets_map.values()),
