@@ -13,7 +13,6 @@ import quantilica_core.metadata as core_meta
 from quantilica_core.http import HttpClient, ProgressCallback
 from quantilica_core.progress import batch_progress, file_progress
 
-from . import logger
 from .constants import (
     REPETRO_TABLES,
     TABLES,
@@ -90,13 +89,7 @@ def download_file(
 
 def _safe_head_date(url: str) -> dt.date | None:
     """Return the Last-Modified date from a HEAD request, or None on failure."""
-    try:
-        meta = client.head_metadata(url)
-        lm = meta.get("last_modified")
-        return lm.date() if lm else None
-    except Exception as e:
-        logger.warning(f"Could not fetch metadata for {url}: {e}")
-        return None
+    return client.head_last_modified_date(url)
 
 
 def _count_download_all_files() -> int:

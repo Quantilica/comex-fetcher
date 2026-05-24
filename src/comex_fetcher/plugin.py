@@ -3,27 +3,21 @@
 from __future__ import annotations
 
 import datetime as dt
-import logging
 from pathlib import Path
 from typing import Annotated
 
 import typer
-from quantilica_core.http import ProgressCallback
-from rich.console import Console, Group
-from rich.live import Live
-from rich.logging import RichHandler
-from rich.progress import (
-    BarColumn,
-    DownloadColumn,
-    MofNCompleteColumn,
-    Progress,
-    SpinnerColumn,
-    TaskID,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
+from quantilica_core.cli import (
+    get_console,
+    make_batch_progress,
+    make_download_progress,
+    setup_rich_logging,
 )
+from quantilica_core.dates import expand_year_range
+from quantilica_core.http import ProgressCallback
+from rich.console import Group
+from rich.live import Live
+from rich.progress import Progress, TaskID
 from rich.table import Table
 
 from comex_fetcher import (
@@ -34,49 +28,10 @@ from comex_fetcher import (
 from comex_fetcher.constants import AUX_TABLES
 
 app = typer.Typer(help="Dados de comércio exterior (SECEX/COMEX).")
-console = Console()
+console = get_console()
 
 _DEFAULT_OUTPUT = Path("/data/secex-comex")
 _MIN_YEAR = 1989
-
-
-def _setup_logging(verbose: bool) -> None:
-    """Configura logging via RichHandler para não quebrar barras de progresso.
-
-    verbose=False → WARNING apenas; verbose=True → DEBUG via Rich console.
-    """
-    level = logging.DEBUG if verbose else logging.WARNING
-    logging.basicConfig(
-        level=level,
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[RichHandler(console=console, show_path=False)],
-        force=True,
-    )
-
-
-def _make_overall_progress() -> Progress:
-    return Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        TimeRemainingColumn(),
-        console=console,
-    )
-
-
-def _make_file_progress() -> Progress:
-    return Progress(
-        SpinnerColumn(),
-        TextColumn("[dim]{task.description}[/dim]"),
-        BarColumn(),
-        DownloadColumn(),
-        TransferSpeedColumn(),
-        TimeRemainingColumn(),
-        console=console,
-    )
 
 
 def _file_callback(
@@ -102,22 +57,14 @@ def _file_callback(
 
 
 def _expand_years(years: list[str]) -> list[int]:
-    result = []
+    result: list[int] = []
     for arg in years:
-        if ":" in arg:
-            try:
-                start, end = map(int, arg.split(":"))
-                step = 1 if start <= end else -1
-                result.extend(range(start, end + step, step))
-            except ValueError:
-                console.print(
-                    f"[yellow]Aviso:[/yellow] intervalo inválido '{arg}'"
-                )
-        else:
-            try:
-                result.append(int(arg))
-            except ValueError:
-                console.print(f"[yellow]Aviso:[/yellow] ano inválido '{arg}'")
+        try:
+            result.extend(expand_year_range(arg))
+        except ValueError:
+            console.print(
+                f"[yellow]Aviso:[/yellow] ano/intervalo inválido '{arg}'"
+            )
     return result
 
 
@@ -174,7 +121,7 @@ def sync(
     ] = False,
 ) -> None:
     """Sincronizar dados de comércio exterior (transações + tabelas)."""
-    _setup_logging(verbose)
+    setup_rich_logging(verbose, console=console)
     exp = imp = True
     if exports or imports:
         exp, imp = exports, imports
@@ -213,8 +160,8 @@ def sync(
     total = (len(years_list) if do_trade else 0) + (
         len(table_names) if do_tables else 0
     )
-    overall = _make_overall_progress()
-    file_prog = _make_file_progress()
+    overall = make_batch_progress(console)
+    file_prog = make_download_progress(console)
     overall_task = overall.add_task("[cyan]Iniciando...[/cyan]", total=total)
     file_task = file_prog.add_task("", total=None, visible=False)
 
@@ -281,7 +228,7 @@ def list_cmd(
     ] = False,
 ) -> None:
     """Listar as tabelas auxiliares de códigos disponíveis."""
-    _setup_logging(verbose)
+    setup_rich_logging(verbose, console=console)
     rich_table = Table(
         title="Tabelas auxiliares disponíveis", show_header=True
     )

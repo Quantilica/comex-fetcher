@@ -12,6 +12,7 @@ import logging
 import sys
 from pathlib import Path
 
+from quantilica_core.dates import expand_year_range
 from quantilica_core.logging import configure_cli_logging
 
 from comex_fetcher import (
@@ -29,22 +30,12 @@ _MIN_YEAR = 1989
 
 def expand_years(args_years: list[str]) -> list[int]:
     """Expand year arguments into a list of individual years."""
-    years = []
+    years: list[int] = []
     for arg in args_years:
-        if ":" in arg:
-            try:
-                start, end = map(int, arg.split(":"))
-                step = 1 if start <= end else -1
-                years.extend(range(start, end + step, step))
-            except ValueError:
-                print(f"Error: Invalid year range '{arg}'")
-                continue
-        else:
-            try:
-                years.append(int(arg))
-            except ValueError:
-                print(f"Error: Invalid year '{arg}'")
-                continue
+        try:
+            years.extend(expand_year_range(arg))
+        except ValueError:
+            print(f"Error: Invalid year or range '{arg}'")
     return years
 
 

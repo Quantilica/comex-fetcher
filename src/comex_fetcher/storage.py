@@ -10,7 +10,11 @@ unknown the ``@`` suffix is omitted and the legacy bare name is used.
 import datetime as dt
 from pathlib import Path
 
-from quantilica_core.storage import BaseDataRepository, stamp_filename
+from quantilica_core.storage import (
+    BaseDataRepository,
+    build_stamped_filename,
+    stamp_filename,
+)
 
 from comex_fetcher.constants import TABLES
 
@@ -78,7 +82,9 @@ class DataRepository(BaseDataRepository):
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-mun" if mun else direction
-        filename = stamp_filename(f"{dataset}_{year}", "csv", last_modified)
+        filename = build_stamped_filename(
+            dataset, year, ext="csv", timestamp=last_modified
+        )
         return self.storage.path_for(f"{dataset}/{filename}")
 
     def path_trade_nbm(
@@ -96,7 +102,9 @@ class DataRepository(BaseDataRepository):
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-nbm"
-        filename = stamp_filename(f"{dataset}_{year}", "csv", last_modified)
+        filename = build_stamped_filename(
+            dataset, year, ext="csv", timestamp=last_modified
+        )
         return self.storage.path_for(f"{dataset}/{filename}")
 
     # ------------------------------------------------------------------
