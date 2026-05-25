@@ -45,9 +45,7 @@ def _file_callback(
         # (0, 0) fires at the start of each download attempt (incl. retries)
         if downloaded == 0 and total_bytes == 0:
             file_progress.reset(task_id)
-            file_progress.update(
-                task_id, description=description, visible=True
-            )
+            file_progress.update(task_id, description=description, visible=True)
             return
         if total_bytes:
             file_progress.update(task_id, total=total_bytes)
@@ -62,9 +60,7 @@ def _expand_years(years: list[str]) -> list[int]:
         try:
             result.extend(expand_year_range(arg))
         except ValueError:
-            console.print(
-                f"[yellow]Aviso:[/yellow] ano/intervalo inválido '{arg}'"
-            )
+            console.print(f"[yellow]Aviso:[/yellow] ano/intervalo inválido '{arg}'")
     return result
 
 
@@ -84,15 +80,11 @@ def sync(
     ] = _DEFAULT_OUTPUT,
     exports: Annotated[
         bool,
-        typer.Option(
-            "--exports/--no-exports", help="Apenas exportações"
-        ),
+        typer.Option("--exports/--no-exports", help="Apenas exportações"),
     ] = False,
     imports: Annotated[
         bool,
-        typer.Option(
-            "--imports/--no-imports", help="Apenas importações"
-        ),
+        typer.Option("--imports/--no-imports", help="Apenas importações"),
     ] = False,
     municipality: Annotated[
         bool,
@@ -103,22 +95,16 @@ def sync(
     ] = False,
     no_tables: Annotated[
         bool,
-        typer.Option(
-            "--no-tables", help="Não baixar as tabelas auxiliares de códigos"
-        ),
+        typer.Option("--no-tables", help="Não baixar as tabelas auxiliares de códigos"),
     ] = False,
     tables_only: Annotated[
         bool,
-        typer.Option(
-            "--tables-only", help="Baixar apenas as tabelas auxiliares"
-        ),
+        typer.Option("--tables-only", help="Baixar apenas as tabelas auxiliares"),
     ] = False,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Listar sem baixar")
     ] = False,
-    verbose: Annotated[
-        bool, typer.Option("--verbose", help="Logs detalhados")
-    ] = False,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Logs detalhados")] = False,
 ) -> None:
     """Sincronizar dados de comércio exterior (transações + tabelas)."""
     setup_rich_logging(verbose, console=console)
@@ -166,14 +152,10 @@ def sync(
     file_task = file_prog.add_task("", total=None, visible=False)
 
     ok = 0
-    with Live(
-        Group(overall, file_prog), console=console, refresh_per_second=10
-    ):
+    with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
         if do_trade:
             for year in years_list:
-                overall.update(
-                    overall_task, description=f"[cyan]{year}[/cyan]"
-                )
+                overall.update(overall_task, description=f"[cyan]{year}[/cyan]")
                 cb = _file_callback(file_prog, file_task, str(year))
                 if year < 1997:
                     get_year_nbm(
@@ -202,9 +184,7 @@ def sync(
 
         if do_tables:
             for name in table_names:
-                overall.update(
-                    overall_task, description=f"[cyan]{name}[/cyan]"
-                )
+                overall.update(overall_task, description=f"[cyan]{name}[/cyan]")
                 cb = _file_callback(file_prog, file_task, name)
                 get_table(data_dir=output, table=name, progress=cb)
                 file_prog.update(file_task, visible=False)
@@ -223,15 +203,11 @@ def sync(
 
 @app.command("list")
 def list_cmd(
-    verbose: Annotated[
-        bool, typer.Option("--verbose", help="Logs detalhados")
-    ] = False,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Logs detalhados")] = False,
 ) -> None:
     """Listar as tabelas auxiliares de códigos disponíveis."""
     setup_rich_logging(verbose, console=console)
-    rich_table = Table(
-        title="Tabelas auxiliares disponíveis", show_header=True
-    )
+    rich_table = Table(title="Tabelas auxiliares disponíveis", show_header=True)
     rich_table.add_column("Nome", style="cyan")
     for name in AUX_TABLES:
         rich_table.add_row(name)

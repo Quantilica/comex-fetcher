@@ -45,4 +45,3 @@ class TestUrls(unittest.TestCase):
             url,
             "https://balanca.economia.gov.br/balanca/bd/comexstat-bd/nbm/IMP_1990_NBM.csv",
         )
-

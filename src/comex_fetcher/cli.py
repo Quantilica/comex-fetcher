@@ -63,9 +63,7 @@ def handle_sync(args: argparse.Namespace):
         if do_tables:
             for name in table_names:
                 print(f"tabela      {name}")
-        n = (len(years) if do_trade else 0) + (
-            len(table_names) if do_tables else 0
-        )
+        n = (len(years) if do_trade else 0) + (len(table_names) if do_tables else 0)
         print(f"Total: {n} item(ns)")
         return
 

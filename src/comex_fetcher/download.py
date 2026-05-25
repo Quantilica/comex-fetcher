@@ -189,9 +189,7 @@ def download_all(
         # 5. Other
         url = get_url("tabelas-auxiliares")
         date = _safe_head_date(url)
-        dest = repo.path_other(
-            "tabelas-auxiliares", "xlsx", last_modified=date
-        )
+        dest = repo.path_other("tabelas-auxiliares", "xlsx", last_modified=date)
         _dl(url, dest)
         _tick(batch_pbar)
 

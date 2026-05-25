@@ -14,7 +14,7 @@ class TestDownloadFile(unittest.TestCase):
 
         url = "http://www.example.com/file.csv"
         output = Path("data/file.csv")
-        
+
         result = download.download_file(url, output)
 
         # Check if download_with_manifest was called with correct arguments

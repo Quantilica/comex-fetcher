@@ -6,7 +6,6 @@ from comex_fetcher import cli
 
 
 class TestCliFunctions(unittest.TestCase):
-
     def test_get_parser(self):
         parser = cli.get_parser()
         self.assertIsInstance(parser, argparse.ArgumentParser)
@@ -14,29 +13,18 @@ class TestCliFunctions(unittest.TestCase):
     def test_expand_years(self):
         years = cli.expand_years(["2010:2019", "2000:2005"])
         self.assertListEqual(
-            years,
-            [y for y in range(2010, 2020)] + [y for y in range(2000, 2006)]
+            years, [y for y in range(2010, 2020)] + [y for y in range(2000, 2006)]
         )
         years = cli.expand_years(["2000:2005", "2010:2019"])
         self.assertListEqual(
-            years,
-            [y for y in range(2000, 2006)] + [y for y in range(2010, 2020)]
+            years, [y for y in range(2000, 2006)] + [y for y in range(2010, 2020)]
         )
         years = cli.expand_years(["2000:2005", "2010"])
-        self.assertListEqual(
-            years,
-            [y for y in range(2000, 2006)] + [2010]
-        )
+        self.assertListEqual(years, [y for y in range(2000, 2006)] + [2010])
         years = cli.expand_years(["2010", "2000:2005"])
-        self.assertListEqual(
-            years,
-            [2010] + [y for y in range(2000, 2006)]
-        )
+        self.assertListEqual(years, [2010] + [y for y in range(2000, 2006)])
         years = cli.expand_years(["2010", "2005:2000"])
-        self.assertListEqual(
-            years,
-            [2010] + [2005, 2004, 2003, 2002, 2001, 2000]
-        )
+        self.assertListEqual(years, [2010] + [2005, 2004, 2003, 2002, 2001, 2000])
 
     @mock.patch("comex_fetcher.cli.get_parser")
     def test_main(self, mock_get_parser):
@@ -49,7 +37,6 @@ class TestCliFunctions(unittest.TestCase):
 
 
 class TestCliSync(unittest.TestCase):
-
     def setUp(self):
         self.parser = cli.get_parser()
 
@@ -67,7 +54,6 @@ class TestCliSync(unittest.TestCase):
 
 
 class TestCliList(unittest.TestCase):
-
     def setUp(self):
         self.parser = cli.get_parser()
 
