@@ -36,7 +36,7 @@ comex-fetcher = "comex_fetcher.cli:main"
 [project.entry-points."quantilica.fetchers"]
 comex = "comex_fetcher.plugin:app"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "ruff>=0.9.0",
     "pytest>=8.0.0",
@@ -45,13 +45,6 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/comex_fetcher"]
-
-[tool.ruff]
-line-length = 88
-target-version = "py312"
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
