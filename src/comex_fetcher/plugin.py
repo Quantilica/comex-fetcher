@@ -134,62 +134,66 @@ def sync(
         console.print(f"[bold]Total:[/bold] {n} item(ns)")
         return
 
-    total = (len(years_list) if do_trade else 0) + (
-        len(table_names) if do_tables else 0
-    )
-    overall = make_batch_progress(console)
-    file_prog = make_download_progress(console)
-    overall_task = overall.add_task("[cyan]Iniciando...[/cyan]", total=total)
-    file_task = file_prog.add_task("", total=None, visible=False)
+    try:
+        total = (len(years_list) if do_trade else 0) + (
+            len(table_names) if do_tables else 0
+        )
+        overall = make_batch_progress(console)
+        file_prog = make_download_progress(console)
+        overall_task = overall.add_task("[cyan]Iniciando...[/cyan]", total=total)
+        file_task = file_prog.add_task("", total=None, visible=False)
 
-    ok = 0
-    with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
-        if do_trade:
-            for year in years_list:
-                overall.update(overall_task, description=f"[cyan]{year}[/cyan]")
-                cb = _file_callback(file_prog, file_task, str(year))
-                if year < 1997:
-                    get_year_nbm(
-                        data_dir=output,
-                        year=year,
-                        exp=exp,
-                        imp=imp,
-                        progress=cb,
+        ok = 0
+        with Live(Group(overall, file_prog), console=console, refresh_per_second=10):
+            if do_trade:
+                for year in years_list:
+                    overall.update(overall_task, description=f"[cyan]{year}[/cyan]")
+                    cb = _file_callback(file_prog, file_task, str(year))
+                    if year < 1997:
+                        get_year_nbm(
+                            data_dir=output,
+                            year=year,
+                            exp=exp,
+                            imp=imp,
+                            progress=cb,
+                        )
+                    else:
+                        get_year(
+                            data_dir=output,
+                            year=year,
+                            exp=exp,
+                            imp=imp,
+                            mun=municipality,
+                            progress=cb,
+                        )
+                    file_prog.update(file_task, visible=False)
+                    ok += 1
+                    overall.update(
+                        overall_task,
+                        advance=1,
+                        description=f"[green]{ok}✓[/green]",
                     )
-                else:
-                    get_year(
-                        data_dir=output,
-                        year=year,
-                        exp=exp,
-                        imp=imp,
-                        mun=municipality,
-                        progress=cb,
+
+            if do_tables:
+                for name in table_names:
+                    overall.update(overall_task, description=f"[cyan]{name}[/cyan]")
+                    cb = _file_callback(file_prog, file_task, name)
+                    get_table(data_dir=output, table=name, progress=cb)
+                    file_prog.update(file_task, visible=False)
+                    ok += 1
+                    overall.update(
+                        overall_task,
+                        advance=1,
+                        description=f"[green]{ok}✓[/green]",
                     )
-                file_prog.update(file_task, visible=False)
-                ok += 1
-                overall.update(
-                    overall_task,
-                    advance=1,
-                    description=f"[green]{ok}✓[/green]",
-                )
 
-        if do_tables:
-            for name in table_names:
-                overall.update(overall_task, description=f"[cyan]{name}[/cyan]")
-                cb = _file_callback(file_prog, file_task, name)
-                get_table(data_dir=output, table=name, progress=cb)
-                file_prog.update(file_task, visible=False)
-                ok += 1
-                overall.update(
-                    overall_task,
-                    advance=1,
-                    description=f"[green]{ok}✓[/green]",
-                )
-
-    console.print(
-        f"[green]✓[/green] [bold]{ok}[/bold]"
-        f" item(ns) sincronizados em [dim]{output}[/dim]"
-    )
+        console.print(
+            f"[green]✓[/green] [bold]{ok}[/bold]"
+            f" item(ns) sincronizados em [dim]{output}[/dim]"
+        )
+    except KeyboardInterrupt:
+        console.print("[yellow]Download cancelado pelo usuário.[/yellow]")
+        raise typer.Exit(code=130)
 
 
 @app.command("list")
