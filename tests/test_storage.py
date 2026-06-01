@@ -1,42 +1,36 @@
 import unittest
 from pathlib import Path
 
-from comex_fetcher import storage
+from comex_fetcher.storage import DataRepository
 
 
 class TestStorage(unittest.TestCase):
     def setUp(self):
         self.root = Path("tmp").resolve()
-        # Ensure tmp exists for resolve to be consistent (though resolve() works on non-existent paths)
         self.root.mkdir(exist_ok=True)
-        with open("testdata.csv", "w") as f:
-            f.write(100 * "a")
+        self.repo = DataRepository(self.root)
 
     def test_path_aux(self):
-        path = storage.path_aux(self.root, "ncm")
-        self.assertEqual(path, self.root / "auxiliary-tables" / "NCM.csv")
+        path = self.repo.path_aux("ncm")
+        self.assertEqual(path, self.root / "auxiliary-tables" / "ncm.csv")
 
     def test_path_trade(self):
-        path = storage.path_trade(self.root, "exp", 2020, mun=False)
-        self.assertEqual(path, self.root / "exp" / "EXP_2020.csv")
-        path = storage.path_trade(self.root, "imp", 2020, mun=False)
-        self.assertEqual(path, self.root / "imp" / "IMP_2020.csv")
-        path = storage.path_trade(self.root, "exp", 2020, mun=True)
-        self.assertEqual(path, self.root / "exp-mun" / "EXP_2020_MUN.csv")
-        path = storage.path_trade(self.root, "imp", 2020, mun=True)
-        self.assertEqual(path, self.root / "imp-mun" / "IMP_2020_MUN.csv")
+        path = self.repo.path_trade("exp", 2020, mun=False)
+        self.assertEqual(path, self.root / "exp" / "exp_2020.csv")
+        path = self.repo.path_trade("imp", 2020, mun=False)
+        self.assertEqual(path, self.root / "imp" / "imp_2020.csv")
+        path = self.repo.path_trade("exp", 2020, mun=True)
+        self.assertEqual(path, self.root / "exp-mun" / "exp-mun_2020.csv")
+        path = self.repo.path_trade("imp", 2020, mun=True)
+        self.assertEqual(path, self.root / "imp-mun" / "imp-mun_2020.csv")
 
     def test_path_trade_nbm(self):
-        path = storage.path_trade_nbm(self.root, "exp", 1990)
-        self.assertEqual(path, self.root / "exp-nbm" / "EXP_1990_NBM.csv")
-        path = storage.path_trade_nbm(self.root, "imp", 1990)
-        self.assertEqual(path, self.root / "imp-nbm" / "IMP_1990_NBM.csv")
-
-    @staticmethod
-    def tearDown():
-        if Path("testdata.csv").exists():
-            Path("testdata.csv").unlink()
+        path = self.repo.path_trade_nbm("exp", 1990)
+        self.assertEqual(path, self.root / "exp-nbm" / "exp-nbm_1990.csv")
+        path = self.repo.path_trade_nbm("imp", 1990)
+        self.assertEqual(path, self.root / "imp-nbm" / "imp-nbm_1990.csv")
 
 
 if __name__ == "__main__":
     unittest.main()
+

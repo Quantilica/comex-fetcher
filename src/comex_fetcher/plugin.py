@@ -8,12 +8,12 @@ from typing import Annotated
 
 import typer
 from quantilica_core.cli import (
+    expand_years_cli,
     get_console,
     make_batch_progress,
     make_download_progress,
     setup_rich_logging,
 )
-from quantilica_core.dates import expand_year_range
 from quantilica_core.http import ProgressCallback
 from rich.console import Group
 from rich.live import Live
@@ -53,15 +53,6 @@ def _file_callback(
 
     return callback
 
-
-def _expand_years(years: list[str]) -> list[int]:
-    result: list[int] = []
-    for arg in years:
-        try:
-            result.extend(expand_year_range(arg))
-        except ValueError:
-            console.print(f"[yellow]Aviso:[/yellow] ano/intervalo inválido '{arg}'")
-    return result
 
 
 @app.command("sync")
@@ -114,7 +105,7 @@ def sync(
 
     current_year = dt.datetime.now().year
     if years:
-        years_list = [y for y in _expand_years(years) if y >= _MIN_YEAR]
+        years_list = [y for y in expand_years_cli(years, console=console) if y >= _MIN_YEAR]
     else:
         years_list = list(range(_MIN_YEAR, current_year + 1))
 
