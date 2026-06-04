@@ -10,7 +10,7 @@ unknown the ``@`` suffix is omitted and the legacy bare name is used.
 import datetime as dt
 from pathlib import Path
 
-from quantilica_core.storage import (
+from quantilica.core.storage import (
     BaseDataRepository,
     build_stamped_filename,
     stamp_filename,

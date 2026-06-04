@@ -9,9 +9,9 @@ import datetime as dt
 from collections.abc import Callable
 from pathlib import Path
 
-import quantilica_core.metadata as core_meta
-from quantilica_core.http import HttpClient, ProgressCallback
-from quantilica_core.progress import batch_progress, file_progress
+import quantilica.core.metadata as core_meta
+from quantilica.core.http import HttpClient, ProgressCallback
+from quantilica.core.progress import batch_progress, file_progress
 
 from .constants import (
     REPETRO_TABLES,

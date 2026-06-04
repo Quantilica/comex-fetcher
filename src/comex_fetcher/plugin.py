@@ -7,14 +7,14 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from quantilica_core.cli import (
+from quantilica.core.cli import (
     expand_years_cli,
     get_console,
     make_batch_progress,
     make_download_progress,
     setup_rich_logging,
 )
-from quantilica_core.http import ProgressCallback
+from quantilica.core.http import ProgressCallback
 from rich.console import Group
 from rich.live import Live
 from rich.progress import Progress, TaskID
@@ -52,7 +52,6 @@ def _file_callback(
         file_progress.update(task_id, completed=downloaded)
 
     return callback
-
 
 
 @app.command("sync")
@@ -105,7 +104,9 @@ def sync(
 
     current_year = dt.datetime.now().year
     if years:
-        years_list = [y for y in expand_years_cli(years, console=console) if y >= _MIN_YEAR]
+        years_list = [
+            y for y in expand_years_cli(years, console=console) if y >= _MIN_YEAR
+        ]
     else:
         years_list = list(range(_MIN_YEAR, current_year + 1))
 

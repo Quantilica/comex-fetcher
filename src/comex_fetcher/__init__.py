@@ -4,8 +4,8 @@ from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-from quantilica_core.http import ProgressCallback
-from quantilica_core.logging import get_logger
+from quantilica.core.http import ProgressCallback
+from quantilica.core.logging import get_logger
 
 try:
     __version__ = version("comex-fetcher")
