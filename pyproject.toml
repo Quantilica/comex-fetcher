@@ -55,8 +55,6 @@ line-length = 88
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/comex_fetcher/cli.py" = ["B008"]
-"src/comex_fetcher/plugin.py" = ["B008"]
 "src/comex_fetcher/__init__.py" = ["E402"]
 
 [tool.hatch.build.targets.wheel]
