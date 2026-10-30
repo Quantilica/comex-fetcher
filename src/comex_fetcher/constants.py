@@ -20,7 +20,7 @@ Available table categories:
 - Conversion: nbm_ncm, isic_cuci
 """
 
-BASE_URL = "https://balanca.economia.gov.br/balanca/bd/"
+BASE_URL = "https://balanca.mdic.gov.br/balanca/bd/"
 
 TRADE = {
     "exp": {
