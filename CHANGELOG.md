@@ -5,6 +5,17 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.3.3] - 2026-10-29
+
+### Corrigido
+
+- Os downloads passam a usar `https://balanca.mdic.gov.br/balanca/bd/`, o novo
+  endereço do Comex Stat. O anterior (`balanca.economia.gov.br`) deixou de
+  responder e todo `sync` falhava. Os caminhos dos arquivos não mudaram.
+- Atenção: o servidor novo responde `206` com código PHP, e não `404`, quando o
+  arquivo pedido não existe (ano fora da faixa ou ainda não publicado). Valide
+  o conteúdo do arquivo, não só o status.
+
 ## [2.3.2] - 2026-10-20
 
 ### Alterado
