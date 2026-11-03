@@ -56,11 +56,12 @@ class DataRepository(BaseDataRepository):
         Raises:
             ValueError: If the auxiliary table name is unknown.
         """
+        timestamp = last_modified or dt.date.today()
         file_info = TABLES.get(name)
         if not file_info:
             raise ValueError(f"Unknown auxiliary table name: {name}")
         ext = file_info["file_ref"].rsplit(".", 1)[-1].lower()
-        filename = stamp_filename(name, ext, last_modified)
+        filename = stamp_filename(name, ext, timestamp)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
     def path_other(
@@ -83,7 +84,8 @@ class DataRepository(BaseDataRepository):
         Returns:
             Path: The generated path for the miscellaneous file.
         """
-        filename = stamp_filename(name, ext, last_modified)
+        timestamp = last_modified or dt.date.today()
+        filename = stamp_filename(name, ext, timestamp)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
     # ------------------------------------------------------------------
@@ -117,13 +119,12 @@ class DataRepository(BaseDataRepository):
         Raises:
             ValueError: If the direction is invalid.
         """
+        timestamp = last_modified or dt.date.today()
         direction = direction.lower()
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-mun" if mun else direction
-        filename = build_stamped_filename(
-            dataset, year, ext="csv", timestamp=last_modified
-        )
+        filename = build_stamped_filename(dataset, year, ext="csv", timestamp=timestamp)
         return self.storage.path_for(f"{dataset}/{filename}")
 
     def path_trade_nbm(
@@ -149,13 +150,12 @@ class DataRepository(BaseDataRepository):
         Raises:
             ValueError: If the direction is invalid.
         """
+        timestamp = last_modified or dt.date.today()
         direction = direction.lower()
         if direction not in ("exp", "imp"):
             raise ValueError(f"Invalid argument direction={direction!r}")
         dataset = f"{direction}-nbm"
-        filename = build_stamped_filename(
-            dataset, year, ext="csv", timestamp=last_modified
-        )
+        filename = build_stamped_filename(dataset, year, ext="csv", timestamp=timestamp)
         return self.storage.path_for(f"{dataset}/{filename}")
 
     # ------------------------------------------------------------------
@@ -180,7 +180,8 @@ class DataRepository(BaseDataRepository):
         Returns:
             Path: The generated path for the REPETRO file.
         """
-        filename = stamp_filename(dataset, "xlsx", last_modified)
+        timestamp = last_modified or dt.date.today()
+        filename = stamp_filename(dataset, "xlsx", timestamp)
         return self.storage.path_for(f"repetro/{filename}")
 
     def path_validacao(
@@ -201,7 +202,8 @@ class DataRepository(BaseDataRepository):
         Returns:
             Path: The generated path for the validation totals file.
         """
-        filename = stamp_filename(dataset, "csv", last_modified)
+        timestamp = last_modified or dt.date.today()
+        filename = stamp_filename(dataset, "csv", timestamp)
         return self.storage.path_for(f"validacao/{filename}")
 
     def path_for_entry(
@@ -223,31 +225,32 @@ class DataRepository(BaseDataRepository):
         Raises:
             ValueError: If unable to build a path for the given entry.
         """
+        timestamp = last_modified or dt.date.today()
         if entry.get("is_trade"):
             if entry.get("nbm"):
                 return self.path_trade_nbm(
                     direction=entry["direction"],
                     year=entry["year"],
-                    last_modified=last_modified,
+                    last_modified=timestamp,
                 )
             return self.path_trade(
                 direction=entry["direction"],
                 year=entry["year"],
                 mun=entry.get("mun", False),
-                last_modified=last_modified,
+                last_modified=timestamp,
             )
 
         if entry.get("is_table"):
             group = entry.get("table_group")
             if group == "auxiliary":
-                return self.path_aux(entry["id"], last_modified=last_modified)
+                return self.path_aux(entry["id"], last_modified=timestamp)
             elif group == "repetro":
-                return self.path_repetro(entry["id"], last_modified=last_modified)
+                return self.path_repetro(entry["id"], last_modified=timestamp)
             elif group == "validation":
-                return self.path_validacao(entry["id"], last_modified=last_modified)
+                return self.path_validacao(entry["id"], last_modified=timestamp)
             elif group == "other":
                 return self.path_other(
-                    entry["id"], entry["ext"], last_modified=last_modified
+                    entry["id"], entry["ext"], last_modified=timestamp
                 )
 
         raise ValueError(f"Unable to build path for entry: {entry}")
