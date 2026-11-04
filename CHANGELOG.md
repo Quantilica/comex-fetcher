@@ -5,6 +5,15 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.5.0] - 2026-11-04
+
+### Adicionado
+- Dataset `ncm-vigente` (tabela NCM do Siscomex, 15.157 linhas) no Lake.
+- A conversão lê arquivos `.zip` e todas as abas de planilhas XLSX (antes só a primeira).
+
+### Corrigido
+- O `sync` descarta a resposta `206` com código PHP que o servidor devolve para arquivo inexistente, em vez de gravá-la como dado.
+
 ## [2.4.0] - 2026-11-04
 
 ### Corrigido
