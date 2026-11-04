@@ -88,6 +88,16 @@ class DataRepository(BaseDataRepository):
         filename = stamp_filename(name, ext, timestamp)
         return self.storage.path_for(f"auxiliary-tables/{filename}")
 
+    def path_ncm_vigente(self, *, last_modified: dt.date | None = None) -> Path:
+        """Path of the Siscomex NCM JSON: ``ncm-vigente/ncm-vigente@AAAAMMDD.json``.
+
+        The source sends no ``Last-Modified``/``ETag``, so the stamp is the download
+        date; the app deduplicates by sha256 to avoid a new version per day.
+        """
+        timestamp = last_modified or dt.date.today()
+        filename = stamp_filename("ncm-vigente", "json", timestamp)
+        return self.storage.path_for(f"ncm-vigente/{filename}")
+
     # ------------------------------------------------------------------
     # Trade data (NCM)
     # ------------------------------------------------------------------
@@ -248,6 +258,8 @@ class DataRepository(BaseDataRepository):
                 return self.path_repetro(entry["id"], last_modified=timestamp)
             elif group == "validation":
                 return self.path_validacao(entry["id"], last_modified=timestamp)
+            elif group == "other" and entry["id"] == "ncm-vigente":
+                return self.path_ncm_vigente(last_modified=timestamp)
             elif group == "other":
                 return self.path_other(
                     entry["id"], entry["ext"], last_modified=timestamp

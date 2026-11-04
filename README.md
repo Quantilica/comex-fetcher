@@ -113,10 +113,12 @@ pip install git+https://github.com/Quantilica/comex-fetcher.git
 ```python
 # Antes
 import comexdown
+
 comexdown.get_year(data_dir, year=2023)
 
 # Depois
 import comex_fetcher
+
 comex_fetcher.get_year(data_dir, year=2023)
 ```
 

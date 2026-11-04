@@ -296,7 +296,20 @@ REPETRO_TABLES = {
     },
 }
 
+#: NCM vigente publicada pelo Portal Único Siscomex (JSON de ~3 MB, sem
+#: Last-Modified/ETag). Traz código, descrição e vigência; não traz TEC/IPI/PIS-Cofins.
+SISCOMEX_NCM_URL = (
+    "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
+)
+
 OTHER_TABLES = {
+    "ncm-vigente": {
+        "description": "Nomenclatura Comum do Mercosul vigente (Portal Único Siscomex)",
+        "server_filename": "nomenclatura_ncm.json",
+        "pkey": ["Codigo"],
+        "name": "NCM vigente (Siscomex)",
+        "url": SISCOMEX_NCM_URL,
+    },
     "tabelas-auxiliares": {
         "description": ("Tabelas de Correlações de Códigos e Classificações em Excel"),
         "server_filename": "TABELAS_AUXILIARES.xlsx",

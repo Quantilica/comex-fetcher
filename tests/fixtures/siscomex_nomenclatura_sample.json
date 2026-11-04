@@ -1,0 +1,150 @@
+{
+ "Data_Ultima_Atualizacao_NCM": "Vigente em 04/11/2026",
+ "Ato": "Resolução Gecex nº 926/2026",
+ "Nomenclaturas": [
+  {
+   "Codigo": "01",
+   "Descricao": "Animais vivos.",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "01.01",
+   "Descricao": "Cavalos, asininos e muares, vivos.",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.2",
+   "Descricao": "- Cavalos:",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.21.00",
+   "Descricao": "-- Reprodutores de raça pura",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.29.00",
+   "Descricao": "-- Outros",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.30.00",
+   "Descricao": "- Asininos",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.90.00",
+   "Descricao": "- Outros",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "01.02",
+   "Descricao": "Animais vivos da espécie bovina.",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.21.00",
+   "Descricao": "-- Reprodutores de raça pura",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.29.00",
+   "Descricao": "-- Outros",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.30.00",
+   "Descricao": "- Asininos",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0101.90.00",
+   "Descricao": "- Outros",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0102.21.10",
+   "Descricao": "Prenhes ou com cria ao pé",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0102.21.90",
+   "Descricao": "Outros",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0910.91.00",
+   "Descricao": "-- Misturas mencionadas na Nota 1 b) do presente Capítulo",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  },
+  {
+   "Codigo": "0910.99.00",
+   "Descricao": "-- Outras",
+   "Data_Inicio": "01/04/2022",
+   "Data_Fim": "31/12/9999",
+   "Tipo_Ato_Ini": "Res Gecex",
+   "Numero_Ato_Ini": "272",
+   "Ano_Ato_Ini": "2021"
+  }
+ ]
+}

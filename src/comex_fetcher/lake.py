@@ -3,13 +3,20 @@
 Datasets in the Lake:
 - ``exp``, ``imp``, ``exp-mun``, ``imp-mun``, ``exp-nbm``, ``imp-nbm``:
   Trade microdata partitioned by ``ano=<ano>`` (integer).
-- ``auxiliary-tables``, ``repetro``, ``validacao``:
-  Unpartitioned reference tables.
+- ``auxiliary-tables``, ``repetro``, ``validacao``, ``ncm-vigente``:
+  Unpartitioned reference tables. XLSX files become one Parquet per sheet (composite
+  key ``<arquivo>__<aba>``); ZIPs become one Parquet per CSV/XLSX member.
 """
 
 from __future__ import annotations
 
+import json
+import os
 import re
+import shutil
+import tempfile
+import unicodedata
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -20,6 +27,7 @@ try:
     from quantilica.analytics.lake import LakeError, LakeWriter
     from quantilica.core.lake import (
         DatasetDescriptor,
+        composite_file_key,
         partition_types_for,
         select_current,
     )
@@ -31,6 +39,7 @@ except ImportError as exc:
     ) from exc
 
 from comex_fetcher import __version__
+from comex_fetcher.payload import SoftErrorPayloadError, check_file
 
 if TYPE_CHECKING:
     from quantilica.core.lake import Planned
@@ -38,7 +47,7 @@ if TYPE_CHECKING:
 SOURCE_ID = "comex"
 
 TRADE_DATASETS = frozenset({"exp", "imp", "exp-mun", "imp-mun", "exp-nbm", "imp-nbm"})
-STATIC_DATASETS = frozenset({"auxiliary-tables", "repetro", "validacao"})
+STATIC_DATASETS = frozenset({"auxiliary-tables", "repetro", "validacao", "ncm-vigente"})
 ALL_DATASETS = sorted(TRADE_DATASETS | STATIC_DATASETS)
 
 DATASET_ALIASES: dict[str, str] = {
@@ -51,12 +60,21 @@ DATASET_ALIASES: dict[str, str] = {
     "auxiliary-tables": "tabelas_auxiliares_ncm_sh",
     "repetro": "repetro",
     "validacao": "totais_validacao",
+    "ncm-vigente": "ncm_vigente",
 }
 
 REVERSE_ALIASES: dict[str, str] = {
     v.replace("_", "-"): k for k, v in DATASET_ALIASES.items()
 }
 REVERSE_ALIASES.update({v: k for k, v in DATASET_ALIASES.items()})
+
+#: colunas de código: sempre texto (``CO_NCM`` com zero à esquerda não vira inteiro).
+CODE_COLUMNS = frozenset(
+    {"co_ncm", "co_nbm", "co_sh2", "co_sh4", "co_sh6", "co_urf", "co_pais", "co_mun"}
+    | {"co_unid", "co_via", "co_cuci_item", "co_cgce_3", "co_isic_classe", "co_ppi"}
+    | {"co_ppe", "co_fat_agreg", "co_uf", "sg_uf", "sg_uf_ncm", "sg_uf_nbm"}
+)
+_TABULAR_MEMBERS = (".csv", ".xlsx")
 
 _YEAR = re.compile(r"[-_](?P<ano>(?:19|20)\d{2})(?:@|\.|$|\b)")
 
@@ -98,6 +116,90 @@ def resolve_year(path: Path) -> int | None:
     if path.parent.name.isdigit() and len(path.parent.name) == 4:
         return int(path.parent.name)
     return None
+
+
+def _snake(name: str) -> str:
+    """Nome de coluna em snake_case ASCII (igual ao do caminho CSV/DuckDB)."""
+    ascii_ = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore")
+    return re.sub(r"[^a-z0-9]+", "_", ascii_.decode().lower()).strip("_")
+
+
+def _retype_sheet(df: pl.DataFrame) -> pl.DataFrame:
+    """Normaliza nomes e tipa uma aba lida como texto.
+
+    Colunas de código ficam texto; as demais viram inteiro, ou decimal, só quando
+    **todo** valor converte (nada de perder dado em silêncio).
+    """
+    df = df.rename({c: _snake(c) or f"col_{i}" for i, c in enumerate(df.columns)})
+    out = []
+    for col in df.columns:
+        series = df[col]
+        if col in CODE_COLUMNS or series.dtype != pl.String:
+            out.append(series)
+            continue
+        for dtype in (pl.Int64, pl.Float64):
+            cast = series.cast(dtype, strict=False)
+            if cast.null_count() == series.null_count():
+                out.append(cast)
+                break
+        else:
+            out.append(series)
+    return pl.DataFrame(out)
+
+
+def read_excel_sheets(path: Path) -> dict[str, pl.DataFrame]:
+    """Todas as abas de um XLSX, como texto e depois tipadas por :func:`_retype_sheet`.
+
+    Abas vazias ficam de fora.
+    """
+    sheets = pl.read_excel(
+        path, sheet_id=0, infer_schema_length=0, raise_if_empty=False
+    )
+    if isinstance(sheets, pl.DataFrame):  # versões que devolvem só a 1ª aba
+        sheets = {"sheet1": sheets}
+    return {
+        name: _retype_sheet(frame)
+        for name, frame in sheets.items()
+        if frame.width > 0 and frame.height > 0
+    }
+
+
+def read_ncm_vigente(path: Path) -> pl.DataFrame:
+    """Lê o JSON de nomenclatura do Siscomex (``Nomenclaturas``) em tabela longa.
+
+    Raises:
+        ValueError: Se o JSON não tiver a lista ``Nomenclaturas``.
+    """
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    rows = payload.get("Nomenclaturas") if isinstance(payload, dict) else None
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("JSON do Siscomex sem 'Nomenclaturas'")
+    df = pl.DataFrame(rows, infer_schema_length=None).select(
+        pl.col("Codigo").cast(pl.String).alias("codigo"),
+        pl.col("Codigo").cast(pl.String).str.replace_all(r"\D", "").alias("codigo_ncm"),
+        pl.col("Descricao").cast(pl.String).alias("descricao"),
+        pl.col("Data_Inicio")
+        .cast(pl.String)
+        .str.to_date("%d/%m/%Y", strict=True)
+        .alias("data_inicio"),
+        pl.col("Data_Fim")
+        .cast(pl.String)
+        .str.to_date("%d/%m/%Y", strict=True)
+        .alias("data_fim"),
+        pl.col("Tipo_Ato_Ini").cast(pl.String).alias("tipo_ato_ini"),
+        pl.col("Numero_Ato_Ini").cast(pl.String).alias("numero_ato_ini"),
+        pl.col("Ano_Ato_Ini").cast(pl.String).alias("ano_ato_ini"),
+    )
+    return df.with_columns(
+        pl.col("codigo_ncm").str.len_chars().cast(pl.Int32).alias("nivel_digitos"),
+        pl.lit(payload.get("Data_Ultima_Atualizacao_NCM")).alias("vigente_em"),
+        pl.lit(payload.get("Ato")).alias("ato"),
+    )
+
+
+def _first_line(exc: BaseException) -> str:
+    message = str(exc).strip()
+    return message.splitlines()[0] if message else repr(exc)
 
 
 class LakeConverter:
@@ -154,7 +256,9 @@ class LakeConverter:
         candidates = sorted(
             p
             for p in input_dir.rglob("*")
-            if p.is_file() and p.suffix.lower() in {".csv", ".xlsx", ".zip"}
+            if p.is_file()
+            and p.suffix.lower() in {".csv", ".xlsx", ".zip", ".json"}
+            and not p.name.endswith(".manifest.json")
         )
 
         current = set(
@@ -206,48 +310,127 @@ class LakeConverter:
             writer = writers[writer_key]
 
             try:
+                tag = f"comex-fetcher {__version__}"
                 suffix = path.suffix.lower()
-                if suffix == ".csv":
-                    with open(path, "rb") as f:
-                        head = f.read(512).lstrip(b"\xef\xbb\xbf \r\n\t")
-                        is_bad = (
-                            head.startswith(b"<?php")
-                            or b"<!doctype html" in head.lower()
-                            or b"<html" in head.lower()
-                        )
-                        if is_bad:
-                            raise LakeError(
-                                f"{path.name}: payload inválido (soft-206 PHP/HTML)"
-                            )
+                if dataset_id == "ncm-vigente":
+                    check_file(path)
+                    written = writer.write_polars(
+                        read_ncm_vigente(path),
+                        path,
+                        partitions=part_vals,
+                        converter=tag,
+                    )
+                    statuses = [written.status]
+                elif suffix == ".csv":
+                    check_file(path)
                     written = writer.write_duckdb(
                         path,
                         partitions=part_vals,
                         separator=";",
                         encoding="latin-1",
-                        converter=f"comex-fetcher {__version__}",
+                        converter=tag,
                     )
+                    statuses = [written.status]
                 elif suffix == ".xlsx":
-                    df = pl.read_excel(path)
-                    written = writer.write_polars(
-                        df,
-                        path,
-                        partitions=part_vals,
-                        converter=f"comex-fetcher {__version__}",
-                    )
+                    statuses = self._write_sheets(writer, path, part_vals, tag)
+                elif suffix == ".zip":
+                    statuses = self._write_zip(writer, path, part_vals, tag)
                 else:
+                    result.errors.append(f"{path.name}: formato não suportado")
                     continue
+            except (SoftErrorPayloadError, LakeError, OSError, duckdb.Error) as exc:
+                result.errors.append(f"{path.name}: {_first_line(exc)}")
+                continue
+            except Exception as exc:  # noqa: BLE001 - erro contado por arquivo
+                result.errors.append(f"{path.name}: {_first_line(exc)}")
+                continue
 
-                if written.status == "skipped":
+            for status in statuses:
+                if status == "skipped":
                     result.skipped += 1
                 else:
                     result.converted += 1
-            except (LakeError, OSError, duckdb.Error, Exception) as exc:
-                message = str(exc).strip()
-                first_line = message.splitlines()[0] if message else repr(exc)
-                result.errors.append(f"{path.name}: {first_line}")
-                continue
 
         return result
+
+    @staticmethod
+    def _write_sheets(
+        writer: LakeWriter, path: Path, part_vals: dict[str, Any], tag: str
+    ) -> list[str]:
+        """Uma escrita por aba, com chave composta ``<arquivo>__<aba>``."""
+        sheets = read_excel_sheets(path)
+        if not sheets:
+            raise LakeError(f"{path.name}: planilha sem abas com dados")
+        return [
+            writer.write_polars(
+                frame,
+                path,
+                partitions=part_vals,
+                file_key_name=composite_file_key(path, name),
+                converter=tag,
+            ).status
+            for name, frame in sheets.items()
+        ]
+
+    @staticmethod
+    def _write_zip(
+        writer: LakeWriter, path: Path, part_vals: dict[str, Any], tag: str
+    ) -> list[str]:
+        """Converte cada membro CSV/XLSX do ZIP, em streaming para disco.
+
+        Chave composta ``<zip>__<membro>``; membro de outro tipo é erro contado
+        (nunca ignorado em silêncio) e ZIP sem membro tabular também.
+        """
+        statuses: list[str] = []
+        with zipfile.ZipFile(path) as zf:
+            members = [i for i in zf.infolist() if not i.is_dir()]
+            bad = [
+                i.filename
+                for i in members
+                if not i.filename.lower().endswith(_TABULAR_MEMBERS)
+            ]
+            tabular = [i for i in members if i.filename not in bad]
+            if not tabular:
+                raise LakeError(f"{path.name}: ZIP sem membro CSV/XLSX")
+            for info in tabular:
+                key = composite_file_key(path, info.filename)
+                ext = Path(info.filename).suffix.lower()
+                with tempfile.TemporaryDirectory(
+                    dir=os.environ.get("QUANTILICA_LAKE_SCRATCH") or None
+                ) as tmp:
+                    dest = Path(tmp) / f"membro{ext}"
+                    with zf.open(info) as src, open(dest, "wb") as out:
+                        shutil.copyfileobj(src, out, 1 << 20)
+                    if ext == ".csv":
+                        check_file(dest, info.filename)
+                        written = writer.write_duckdb(
+                            dest,
+                            partitions=part_vals,
+                            file_key_name=key,
+                            src_origin=path,
+                            separator=";",
+                            encoding="latin-1",
+                            converter=tag,
+                        )
+                        statuses.append(written.status)
+                    else:
+                        for sheet, frame in read_excel_sheets(dest).items():
+                            statuses.append(
+                                writer.write_polars(
+                                    frame,
+                                    path,
+                                    partitions=part_vals,
+                                    file_key_name=composite_file_key(
+                                        path, f"{info.filename}__{sheet}"
+                                    ),
+                                    converter=tag,
+                                ).status
+                            )
+        if bad:
+            raise LakeError(
+                f"{path.name}: membros não tabulares ignorados: {', '.join(bad)}"
+            )
+        return statuses
 
     def inventory(self, input_dir: Path) -> list[Planned]:
         """Return planned datasets for each raw file."""
@@ -261,7 +444,7 @@ class LakeConverter:
         for path in sorted(input_dir.rglob("*")):
             if not path.is_file() or path.name.endswith((".manifest.json", ".tmp")):
                 continue
-            if path.suffix.lower() not in {".csv", ".xlsx", ".zip"}:
+            if path.suffix.lower() not in {".csv", ".xlsx", ".zip", ".json"}:
                 planned.append(Planned(path, skip_reason="nao_tabular"))
                 continue
             dataset_id = resolve_dataset(path)

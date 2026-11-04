@@ -76,7 +76,7 @@ def get_url(table_name: str, **kwargs) -> str:
     if table_name in REPETRO_TABLES:
         return REPETRO_TABLES[table_name]["url"]
 
-    if table_name == "tabelas-auxiliares":
+    if table_name in OTHER_TABLES:
         return OTHER_TABLES[table_name]["url"]
 
     if table_name in AUX_TABLES:

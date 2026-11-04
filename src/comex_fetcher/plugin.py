@@ -7,9 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from quantilica.cli.sdk import FetcherApp
+from quantilica.core.storage import expected_format_for_path
 from quantilica.core.sync import FreshnessPolicy
 
 from .catalog import GROUP_ALIASES, GROUPS, list_datasets
+from .payload import guard_for
 from .storage import DataRepository
 
 
@@ -29,7 +31,51 @@ def path_builder(
     return DataRepository(output_dir).path_for_entry(entry, last_modified=last_modified)
 
 
-fetcher = FetcherApp(
+class ComexFetcherApp(FetcherApp):
+    """``FetcherApp`` que barra no ``sync`` o soft-206 do MDIC (PHP/HTML com 206).
+
+    O download passa a validar a primeira linha útil do CSV/JSON (``expect_header``)
+    antes do ``os.replace``; o NCM do Siscomex, sem Last-Modified/ETag, é
+    deduplicado por sha256 para não gerar uma versão nova por dia.
+    """
+
+    def _download_file(  # type: ignore[override]
+        self,
+        url: str,
+        output: Path,
+        progress: Any = None,
+        *,
+        force: bool = False,
+        dataset_id: str | None = None,
+        expected_format: str | None = None,
+    ) -> Path:
+        extra: dict[str, Any] = {"force": True} if force else {}
+        fmt = (
+            expected_format
+            if expected_format is not None
+            else expected_format_for_path(output.name)
+        )
+        if fmt and self._client_accepts("expected_format"):
+            extra["expected_format"] = fmt
+        guard = guard_for(output.name)
+        if guard is not None and self._client_accepts("expect_header"):
+            extra["expect_header"] = guard
+        if output.name.startswith("ncm-vigente@") and self._client_accepts(
+            "deduplicate_by_sha256"
+        ):
+            extra["deduplicate_by_sha256"] = True
+        return self.client.download_with_manifest(
+            url,
+            output,
+            source_id=self.source_id,
+            dataset_id=dataset_id or output.parent.name or self.source_id,
+            producer=self.name,
+            progress=progress,
+            **extra,
+        )
+
+
+fetcher = ComexFetcherApp(
     name="comex-fetcher",
     help="Dados de comércio exterior (SECEX/COMEX).",
     groups_dict=GROUPS,
