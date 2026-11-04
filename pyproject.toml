@@ -23,7 +23,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "quantilica-core>=0.4.0",
+    "quantilica-core>=0.16.0",
 ]
 
 [project.urls]
