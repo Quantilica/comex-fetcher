@@ -206,3 +206,44 @@ def test_inventory_comex(tmp_path: Path) -> None:
     datasets = {p.path.name: (p.dataset, p.skip_reason) for p in planned}
     assert datasets["exp_2023@20240101.csv"] == ("exp", None)
     assert datasets["doc.pdf"] == (None, "nao_tabular")
+
+
+_NCM_HEAD = '"CO_NCM";"CO_UNID";"NO_NCM_POR"\n'
+_NCM_GOOD = "".join(f'"{i:08d}";"10";"Desc {i}"\n' for i in range(3000))
+
+
+def test_csv_with_unclosed_quote_keeps_every_line(tmp_path: Path) -> None:
+    """Aspa que abre e não fecha (ncm@20261006.csv) não pode derrubar o arquivo."""
+    aux = tmp_path / "raw" / "auxiliary-tables"
+    aux.mkdir(parents=True)
+    bad = (
+        _NCM_HEAD
+        + _NCM_GOOD
+        + '"99999999";"10";"Cavalo\n'  # aspa aberta, nunca fechada
+        + '"99999998";"10";"Cavalo "puro" sangue"\n'  # aspas no meio do texto
+        + '"99999997";"10";"Tubo de 5" de diametro"\n'
+        + '"99999996";"10";"Normal"\n'
+    )
+    (aux / "ncm@20261006.csv").write_bytes(bad.encode("latin-1"))
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert (res.converted, res.errors) == (1, [])
+    dataset = tmp_path / "lake" / SOURCE_ID / "auxiliary-tables"
+    assert check_dataset(dataset) == []
+    df = scan_dataset(dataset).collect()
+    assert df.height == 3004  # nenhuma linha perdida nem unida
+    by_code = dict(zip(df["co_ncm"], df["no_ncm_por"], strict=True))
+    assert by_code["99999999"] == "Cavalo"
+    assert by_code["99999998"] == 'Cavalo "puro" sangue'
+    assert by_code["99999997"] == 'Tubo de 5" de diametro'
+    assert by_code["99999996"] == "Normal"
+
+
+def test_repair_csv_quotes_line() -> None:
+    from comex_fetcher.lake import _repair_quotes_line as fix
+
+    assert fix('"a";"b"') == '"a";"b"'
+    assert fix('"a";"b') == '"a";"b"'
+    assert fix('"a";"x"y"z";"c"') == '"a";"x""y""z";"c"'
+    assert fix('"a";"q""r";"c"') == '"a";"q""r";"c"'
+    assert fix('1;"a;b";') == '1;"a;b";'
+    assert fix('x"y;z') == 'x"y;z'

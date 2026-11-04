@@ -181,3 +181,41 @@ def test_sync_rejects_json_php_for_ncm(tmp_path: Path) -> None:
         (FIXTURES / "siscomex_nomenclatura_sample.json").read_bytes(), status=200
     ).download_entry(entry, tmp_path)
     assert json.loads(ok.read_text(encoding="utf-8"))["Nomenclaturas"]
+
+
+def test_lake_rows_equal_sum_of_all_sheets_and_versions_do_not_duplicate(
+    tmp_path: Path,
+) -> None:
+    """O Lake pode ter mais linhas que a 1ª aba, mas nunca linhas duplicadas.
+
+    A contagem do lake é a soma de **todas** as abas da versão vigente de cada
+    arquivo; uma versão nova do mesmo arquivo substitui a anterior.
+    """
+    raw = tmp_path / "raw" / "repetro"
+    raw.mkdir(parents=True)
+
+    def rows(n: int) -> list[list[str]]:
+        return [["CO_NCM", "V"]] + [[f"{i:08d}", str(i)] for i in range(n)]
+
+    _xlsx(
+        raw / "exp-repetro@20261001.xlsx",
+        {"Leia-me": rows(3), "Dados": rows(300)},
+    )
+    _xlsx(
+        raw / "exp-repetro@20261030.xlsx",  # versão mais nova do mesmo arquivo
+        {"Leia-me": rows(3), "Dados": rows(300)},
+    )
+    _xlsx(raw / "imp-repetro@20261030.xlsx", {"Dados": rows(50)})
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert (res.converted, res.skipped, res.errors) == (3, 1, [])
+    dataset = tmp_path / "lake" / SOURCE_ID / "repetro"
+    assert check_dataset(dataset) == []
+    assert scan_dataset(dataset).collect().height == 3 + 300 + 50
+
+    _xlsx(
+        raw / "exp-repetro@20261104.xlsx",
+        {"Leia-me": rows(3), "Dados": rows(320)},
+    )
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert res.errors == []
+    assert scan_dataset(dataset).collect().height == 3 + 320 + 50

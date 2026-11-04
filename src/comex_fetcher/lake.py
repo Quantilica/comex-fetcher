@@ -11,6 +11,7 @@ Datasets in the Lake:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -43,6 +44,8 @@ from comex_fetcher.payload import SoftErrorPayloadError, check_file
 
 if TYPE_CHECKING:
     from quantilica.core.lake import Planned
+
+logger = logging.getLogger(__name__)
 
 SOURCE_ID = "comex"
 
@@ -145,6 +148,110 @@ def _retype_sheet(df: pl.DataFrame) -> pl.DataFrame:
         else:
             out.append(series)
     return pl.DataFrame(out)
+
+
+def _repair_quotes_line(line: str, sep: str = ";") -> str:
+    """Corrige as aspas de **uma** linha de CSV, sem alterar o número de campos.
+
+    Critério: um campo é entre aspas só se começa com ``"``; dentro dele, ``""`` é
+    aspa escapada e um ``"`` só fecha o campo quando é seguido do separador ou do
+    fim da linha. Qualquer outra ``"`` é texto e vira ``""``; campo que chega ao fim
+    da linha sem fechar é fechado. Campo sem aspas no início fica como está.
+    """
+    out: list[str] = []
+    i, n = 0, len(line)
+    while i <= n:
+        if i < n and line[i] == '"':
+            out.append('"')
+            i += 1
+            while True:
+                if i >= n:  # campo aberto até o fim da linha: fecha
+                    out.append('"')
+                    break
+                ch = line[i]
+                if ch == '"':
+                    if i + 1 < n and line[i + 1] == '"':
+                        out.append('""')
+                        i += 2
+                        continue
+                    if i + 1 >= n or line[i + 1] == sep:
+                        out.append('"')
+                        i += 1
+                        break
+                    out.append('""')  # aspa no meio do texto
+                    i += 1
+                    continue
+                out.append(ch)
+                i += 1
+        else:
+            j = line.find(sep, i)
+            j = n if j < 0 else j
+            out.append(line[i:j])
+            i = j
+        if i < n and line[i] == sep:
+            out.append(sep)
+            i += 1
+            if i == n:  # separador final: campo vazio
+                break
+            continue
+        break
+    return "".join(out)
+
+
+def repair_csv_quotes(src: Path, dst: Path, *, encoding: str = "latin-1") -> int:
+    """Copia ``src`` para ``dst`` com as aspas de cada linha reparadas.
+
+    Uma linha física continua sendo um registro (nenhuma linha é descartada ou
+    unida). Devolve quantas linhas foram alteradas.
+    """
+    changed = 0
+    with (
+        open(src, encoding=encoding, newline="") as reader,
+        open(dst, "w", encoding=encoding, newline="") as writer,
+    ):
+        for raw in reader:
+            body = raw.rstrip("\r\n")
+            fixed = _repair_quotes_line(body) if '"' in body else body
+            if fixed != body:
+                changed += 1
+            writer.write(fixed + raw[len(body) :])
+    return changed
+
+
+def _is_csv_error(exc: BaseException) -> bool:
+    return "CSV Error" in str(exc) or "csv" in type(exc).__name__.lower()
+
+
+def _write_csv(
+    writer: LakeWriter,
+    src: Path,
+    *,
+    scratch_dir: Path,
+    **kwargs: Any,
+) -> Any:
+    """``write_duckdb`` com repetição tolerante se o CSV tiver aspas irregulares.
+
+    A leitura normal vem primeiro. Se o DuckDB recusar o arquivo com ``CSV Error``
+    (aspa que abre e nunca fecha engole as linhas seguintes), o arquivo é copiado
+    com as aspas reparadas por :func:`repair_csv_quotes` e a escrita é refeita;
+    chave, ``sha256`` e origem continuam os do arquivo original.
+    """
+    try:
+        return writer.write_duckdb(src, **kwargs)
+    except (duckdb.Error, LakeError) as exc:
+        if not _is_csv_error(exc):
+            raise
+        first = _first_line(exc)
+    fixed = scratch_dir / f"reparado-{src.name}"
+    changed = repair_csv_quotes(src, fixed, encoding=kwargs.get("encoding", "latin-1"))
+    logger.warning(
+        "comex: %s: %s; reescrito com aspas reparadas em %d linha(s)",
+        src.name,
+        first,
+        changed,
+    )
+    kwargs.setdefault("src_origin", src)
+    return writer.write_duckdb(fixed, **kwargs)
 
 
 def read_excel_sheets(path: Path) -> dict[str, pl.DataFrame]:
@@ -323,13 +430,18 @@ class LakeConverter:
                     statuses = [written.status]
                 elif suffix == ".csv":
                     check_file(path)
-                    written = writer.write_duckdb(
-                        path,
-                        partitions=part_vals,
-                        separator=";",
-                        encoding="latin-1",
-                        converter=tag,
-                    )
+                    with tempfile.TemporaryDirectory(
+                        dir=os.environ.get("QUANTILICA_LAKE_SCRATCH") or None
+                    ) as tmp:
+                        written = _write_csv(
+                            writer,
+                            path,
+                            scratch_dir=Path(tmp),
+                            partitions=part_vals,
+                            separator=";",
+                            encoding="latin-1",
+                            converter=tag,
+                        )
                     statuses = [written.status]
                 elif suffix == ".xlsx":
                     statuses = self._write_sheets(writer, path, part_vals, tag)
@@ -403,8 +515,10 @@ class LakeConverter:
                         shutil.copyfileobj(src, out, 1 << 20)
                     if ext == ".csv":
                         check_file(dest, info.filename)
-                        written = writer.write_duckdb(
+                        written = _write_csv(
+                            writer,
                             dest,
+                            scratch_dir=Path(tmp),
                             partitions=part_vals,
                             file_key_name=key,
                             src_origin=path,
