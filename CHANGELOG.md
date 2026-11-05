@@ -82,7 +82,7 @@ Primeira entrada em formato Keep a Changelog. O pacote foi renomeado de
 - Download de exportações, importações, dados municipais, série histórica NBM e
   tabelas auxiliares de códigos (NCM, países, UF, via).
 
-### Histórico anterior
+**Histórico anterior.**
 
 Versões até a 2.0.0 antecedem a adoção deste changelog e estão registradas nas
 tags do repositório: 1.5.2 (2025-12-24), 1.4.1 (2024-03-08), 1.4.0 (2022-07-07),
