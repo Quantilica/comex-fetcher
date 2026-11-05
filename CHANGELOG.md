@@ -5,7 +5,7 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [Unreleased]
+## [2.5.1] - 2026-11-04
 
 ### Corrigido
 - A conversão de CSV com aspas irregulares (campo que abre `"` e não fecha, ou aspa no meio do texto, como em `ncm@20261006.csv`) não falha mais: o arquivo é reescrito com as aspas reparadas, uma linha continua sendo um registro e nenhuma é perdida.
