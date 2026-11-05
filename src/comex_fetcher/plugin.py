@@ -75,7 +75,10 @@ class ComexFetcherApp(FetcherApp):
         )
 
 
+_DEFAULT_OUTPUT = Path("/data/comex")
+
 fetcher = ComexFetcherApp(
+    default_output=_DEFAULT_OUTPUT,
     name="comex-fetcher",
     help="Dados de comércio exterior (SECEX/COMEX).",
     groups_dict=GROUPS,
@@ -94,7 +97,13 @@ def convert(
     force: bool = False,
 ) -> Any:
     """Converte arquivos brutos do COMEX para o lake Hive (Parquet)."""
-    from comex_fetcher import lake
+    try:
+        from comex_fetcher import lake
+    except ImportError as exc:
+        raise ImportError(
+            "Conversão para o lake requer o extra 'analysis'. "
+            "Instale com: quantilica install comex --extra analysis"
+        ) from exc
 
     return lake.converter.convert(input_dir, lake_dir, datasets=dataset, force=force)
 
