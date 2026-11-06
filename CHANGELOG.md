@@ -11,6 +11,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Corrigido
 - `convert` sem o extra `analysis` falha com a instrução de instalação (`quantilica install comex --extra analysis`) em vez de um erro de import genérico, e o `sync` passa a ter diretório de saída padrão fixo.
+- O extra `analysis` passa a instalar o `fastexcel`, de que o Polars precisa para ler as planilhas `.xlsx` (Repetro e tabelas auxiliares); sem ele a conversão desses arquivos falhava com `required package 'fastexcel' not found`.
 
 ## [2.5.1] - 2026-11-04
 
