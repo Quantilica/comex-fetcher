@@ -7,6 +7,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 
+### Corrigido
+- Tabelas auxiliares (`auxiliary-tables`): os CSV passam a ser lidos com o dialeto fixo da fonte (campos entre aspas duplas, aspa no texto escrita `""`). Antes o DuckDB deduzia o dialeto e errava: na tabela `sh` as aspas ficavam literais e os textos com `;` (por exemplo `Lives animals; Animal products`) eram divididos, de modo que 4.918 das 6.620 linhas ganhavam valores nas colunas espúrias `column16` a `column36`; agora `sh` sai com as 16 colunas do cabeçalho e 6.620 linhas. Também deixam de sair com `""` literal os textos de `cgce`, `ppe` e `ppi`, e os nomes de `uf_mun` voltam a ter o apóstrofo (`LAGOA D'ANTA`, antes `LAGOA DANTA`). O dialeto vale para todos os CSV do Comex; em amostras de `exp`, `imp`, `exp-mun`, `exp-nbm` e `validacao` o resultado é idêntico.
+- Tabelas auxiliares: os códigos das abas da planilha (`co_cgce_n1` a `n3`, `co_cuci_sub`, `co_cuci_divisao`, `co_cuci_sec`, `co_cuci_grupo`, `co_isic_grupo`, `co_isic_divisao`, `co_isic_secao`, `co_siit`, `co_pais_ison3`, `co_pais_isoa3`, `co_bloco`, `co_mun_geo`, `co_ncm_secrom`, `co_exp_set`, `co_exp_subset`) passam a ser texto, como nos CSV; antes viravam inteiro nas abas e a mesma coluna tinha dois tipos no dataset.
+
+**Como reconverter `auxiliary-tables`.** O nome dos Parquets e as partições não mudam (o dataset não tem partição), mas o conteúdo mudou e o bruto continua o mesmo, então uma conversão comum pularia os arquivos como já convertidos. Apague antes a pasta `comex/auxiliary-tables/` do lake e converta de novo o dataset `auxiliary-tables`. Os outros datasets não precisam ser refeitos.
+
 ### Adicionado
 - Documentação dos dados em `docs/`, conforme a norma de documentação dos dados: página da fonte, página de cada um dos dez datasets com dicionário de todas as variáveis e esquema de referência do lake. Um teste a verifica.
 

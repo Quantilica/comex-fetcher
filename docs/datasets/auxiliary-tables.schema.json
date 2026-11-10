@@ -1,13 +1,13 @@
 {
   "fonte": "comex",
   "dataset": "auxiliary-tables",
-  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "gerado_em": "2026-11-10T14:47:59+00:00",
   "particoes": [],
   "colunas": [
     {
       "nome": "co_cgce_n3",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -35,7 +35,7 @@
     {
       "nome": "co_cgce_n2",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -63,7 +63,7 @@
     {
       "nome": "co_cgce_n1",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -105,7 +105,7 @@
     {
       "nome": "co_cuci_sub",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -133,7 +133,7 @@
     {
       "nome": "co_cuci_divisao",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -147,7 +147,7 @@
     {
       "nome": "co_cuci_sec",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -258,7 +258,7 @@
     {
       "nome": "co_isic_grupo",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -286,7 +286,7 @@
     {
       "nome": "co_isic_divisao",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -389,7 +389,7 @@
     {
       "nome": "co_siit",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -422,7 +422,7 @@
     {
       "nome": "co_pais_ison3",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -457,7 +457,7 @@
     {
       "nome": "co_bloco",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },
@@ -630,132 +630,6 @@
       ]
     },
     {
-      "nome": "column16",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column17",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column18",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column19",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column20",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column21",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column22",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column23",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column24",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column25",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column26",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column27",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column28",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column29",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column30",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column31",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column32",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column33",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column34",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column35",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
-      "nome": "column36",
-      "tipos": [
-        "string"
-      ]
-    },
-    {
       "nome": "no_siit",
       "tipos": [
         "large_string",
@@ -793,7 +667,7 @@
     {
       "nome": "co_mun_geo",
       "tipos": [
-        "int64",
+        "large_string",
         "string"
       ]
     },

@@ -13,6 +13,7 @@ import pytest
 pytest.importorskip("quantilica.analytics.lake")
 pytest.importorskip("duckdb")
 
+import polars as pl
 from quantilica.analytics.lake import check_dataset, scan_dataset
 from typer.testing import CliRunner
 
@@ -247,3 +248,52 @@ def test_repair_csv_quotes_line() -> None:
     assert fix('"a";"q""r";"c"') == '"a";"q""r";"c"'
     assert fix('1;"a;b";') == '1;"a;b";'
     assert fix('x"y;z') == 'x"y;z'
+
+
+def test_sh_csv_com_ponto_e_virgula_e_aspas_no_texto(tmp_path: Path) -> None:
+    """Texto com ``;`` e aspas dobradas fica numa só célula (tabela ``sh``)."""
+    aux = tmp_path / "raw" / "auxiliary-tables"
+    aux.mkdir(parents=True)
+    head = '"CO_SH6";"NO_SH6_ING";"CO_SH2";"NO_SH2_ING"\n'
+    corpo = "".join(f'"{i:06d}";"Item {i}";"01";"Animais"\n' for i in range(3000))
+    corpo += (
+        '"010110";"Pure-bred ""gallipavos"" horses";"01";'
+        '"Live animals; Animal products"\n'
+        '"010111";"Outro";"01";"Live animals; Animal products"\n'
+        # aspa solta no meio do texto, como no arquivo real
+        '"010112";"Paineis oriented strand board" (OSB)";"01";"Animais"\n'
+    )
+    (aux / "sh@20261006.csv").write_bytes((head + corpo).encode("latin-1"))
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert (res.converted, res.errors) == (1, [])
+    df = scan_dataset(tmp_path / "lake" / SOURCE_ID / "auxiliary-tables").collect()
+    assert df.columns == ["co_sh6", "no_sh6_ing", "co_sh2", "no_sh2_ing"]
+    assert df.height == 3003
+    linha = df.filter(pl.col("co_sh6") == "010110").row(0, named=True)
+    assert linha["no_sh6_ing"] == 'Pure-bred "gallipavos" horses'
+    assert linha["no_sh2_ing"] == "Live animals; Animal products"
+    assert not any(c.startswith("column") for c in df.columns)
+    assert not df["no_sh2_ing"].str.starts_with('"').any()
+
+
+def test_codigos_das_abas_do_xlsx_ficam_texto_como_no_csv(tmp_path: Path) -> None:
+    import xlsxwriter
+
+    aux = tmp_path / "raw" / "auxiliary-tables"
+    aux.mkdir(parents=True)
+    wb = xlsxwriter.Workbook(aux / "tabelas-auxiliares@20261006.xlsx")
+    ws = wb.add_worksheet("SIIT")
+    ws.write_row(0, 0, ["CO_SIIT", "NO_SIIT", "CO_PAIS_ISON3"])
+    ws.write_row(1, 0, [1, "Alimentos", 76])  # números, como no Excel real
+    wb.close()
+    (aux / "siit@20261006.csv").write_bytes(
+        '"CO_SIIT";"NO_SIIT"\n"1";"Alimentos"\n'.encode("latin-1")
+    )
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert (res.converted, res.errors) == (2, [])
+    dataset = tmp_path / "lake" / SOURCE_ID / "auxiliary-tables"
+    aba = pl.read_parquet(dataset / "tabelas-auxiliares__siit.parquet")
+    csv = pl.read_parquet(dataset / "siit.parquet")
+    assert aba.schema["co_siit"] == csv.schema["co_siit"] == pl.String
+    assert aba.schema["co_pais_ison3"] == pl.String
+    assert aba["co_siit"][0] == "1"

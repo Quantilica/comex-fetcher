@@ -12,20 +12,20 @@ dataset:
   unidade: "um código de uma classificação (ou a correlação de uma NCM com as classificações), conforme a tabela"
   granularidade: {espacial: "não se aplica (as tabelas `uf`, `uf_mun`, `pais` descrevem códigos)", temporal: "não se aplica"}
   formato_bruto: "CSV (um por tabela) separado por ponto e vírgula, com campos entre aspas, em latin-1, mais uma planilha `TABELAS_AUXILIARES.xlsx` que reúne as tabelas em abas"
-  lake: {estado: convertido, particoes: [], chave: [], colunas: 131}
+  lake: {estado: convertido, particoes: [], chave: [], colunas: 110}
   unidades_de_medida:
-    co_cuci_sub: "código (inteiro nas abas do XLSX)"
-    co_cgce_n3: "código (inteiro nas abas do XLSX)"
-    co_cgce_n2: "código (inteiro nas abas do XLSX)"
-    co_cgce_n1: "código (inteiro nas abas do XLSX)"
-    co_cuci_divisao: "código (inteiro nas abas do XLSX)"
-    co_cuci_sec: "código (inteiro nas abas do XLSX)"
-    co_isic_grupo: "código (inteiro nas abas do XLSX)"
-    co_isic_divisao: "código (inteiro nas abas do XLSX)"
-    co_siit: "código (inteiro nas abas do XLSX)"
-    co_pais_ison3: "código ISO numérico (inteiro nas abas do XLSX)"
-    co_bloco: "código (inteiro nas abas do XLSX)"
-    co_mun_geo: "código de município (inteiro nas abas do XLSX)"
+    co_cuci_sub: "código (texto)"
+    co_cgce_n3: "código (texto)"
+    co_cgce_n2: "código (texto)"
+    co_cgce_n1: "código (texto)"
+    co_cuci_divisao: "código (texto)"
+    co_cuci_sec: "código (texto)"
+    co_isic_grupo: "código (texto)"
+    co_isic_divisao: "código (texto)"
+    co_siit: "código (texto)"
+    co_pais_ison3: "código ISO numérico (texto)"
+    co_bloco: "código (texto)"
+    co_mun_geo: "código de município (texto)"
     numero_da_aba: "ordinal da aba"
   dados_pessoais: nenhum
   eras: []
@@ -57,8 +57,8 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 | Estado no lake | convertido |
 | Partições | — |
 | Chave | — |
-| Colunas | 131 |
-| Unidades de medida | `co_cuci_sub`: código (inteiro nas abas do XLSX); `co_cgce_n3`: código (inteiro nas abas do XLSX); `co_cgce_n2`: código (inteiro nas abas do XLSX); `co_cgce_n1`: código (inteiro nas abas do XLSX); `co_cuci_divisao`: código (inteiro nas abas do XLSX); `co_cuci_sec`: código (inteiro nas abas do XLSX); `co_isic_grupo`: código (inteiro nas abas do XLSX); `co_isic_divisao`: código (inteiro nas abas do XLSX); `co_siit`: código (inteiro nas abas do XLSX); `co_pais_ison3`: código ISO numérico (inteiro nas abas do XLSX); `co_bloco`: código (inteiro nas abas do XLSX); `co_mun_geo`: código de município (inteiro nas abas do XLSX); `numero_da_aba`: ordinal da aba |
+| Colunas | 110 |
+| Unidades de medida | `co_cuci_sub`: código (texto); `co_cgce_n3`: código (texto); `co_cgce_n2`: código (texto); `co_cgce_n1`: código (texto); `co_cuci_divisao`: código (texto); `co_cuci_sec`: código (texto); `co_isic_grupo`: código (texto); `co_isic_divisao`: código (texto); `co_siit`: código (texto); `co_pais_ison3`: código ISO numérico (texto); `co_bloco`: código (texto); `co_mun_geo`: código de município (texto); `numero_da_aba`: ordinal da aba |
 | Dados pessoais | nenhum |
 | Eras | nenhuma |
 | Revisado em | 2026-11-10 |
@@ -108,27 +108,27 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 
 | Coluna no lake | Na fonte | Tipo | Descrição | Unidade / códigos | Período |
 |---|---|---|---|---|---|
-| `co_cgce_n3` | `CO_CGCE_N3` | texto (inteiro nas abas do XLSX) | Código de CGCE, nível 3 | em `cgce`, `ncm`, `xlsx:cgce` | todo |
+| `co_cgce_n3` | `CO_CGCE_N3` | texto | Código de CGCE, nível 3 | em `cgce`, `ncm`, `xlsx:cgce` | todo |
 | `no_cgce_n3` | `NO_CGCE_N3` | texto | Nome de CGCE, nível 3 | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n3_ing` | `NO_CGCE_N3_ING` | texto | Nome de CGCE, nível 3 em inglês | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n3_esp` | `NO_CGCE_N3_ESP` | texto | Nome de CGCE, nível 3 em espanhol | em `cgce`, `xlsx:cgce` | todo |
-| `co_cgce_n2` | `CO_CGCE_N2` | texto (inteiro nas abas do XLSX) | Código de CGCE, nível 2 | em `cgce`, `xlsx:cgce` | todo |
+| `co_cgce_n2` | `CO_CGCE_N2` | texto | Código de CGCE, nível 2 | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n2` | `NO_CGCE_N2` | texto | Nome de CGCE, nível 2 | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n2_ing` | `NO_CGCE_N2_ING` | texto | Nome de CGCE, nível 2 em inglês | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n2_esp` | `NO_CGCE_N2_ESP` | texto | Nome de CGCE, nível 2 em espanhol | em `cgce`, `xlsx:cgce` | todo |
-| `co_cgce_n1` | `CO_CGCE_N1` | texto (inteiro nas abas do XLSX) | Código de CGCE, nível 1 | em `cgce`, `xlsx:cgce` | todo |
+| `co_cgce_n1` | `CO_CGCE_N1` | texto | Código de CGCE, nível 1 | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n1` | `NO_CGCE_N1` | texto | Nome de CGCE, nível 1 | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n1_ing` | `NO_CGCE_N1_ING` | texto | Nome de CGCE, nível 1 em inglês | em `cgce`, `xlsx:cgce` | todo |
 | `no_cgce_n1_esp` | `NO_CGCE_N1_ESP` | texto | Nome de CGCE, nível 1 em espanhol | em `cgce`, `xlsx:cgce` | todo |
 | `co_cuci_item` | `CO_CUCI_ITEM` | texto | Código de CUCI, item | em `cuci`, `ncm`, `xlsx:cuci` | todo |
 | `no_cuci_item` | `NO_CUCI_ITEM` | texto | Nome de CUCI, item | em `cuci`, `xlsx:cuci` | todo |
-| `co_cuci_sub` | `CO_CUCI_SUB` | texto (inteiro nas abas do XLSX) | Código de CUCI, subgrupo (`sub`) | em `cuci`, `xlsx:cuci` | todo |
+| `co_cuci_sub` | `CO_CUCI_SUB` | texto | Código de CUCI, subgrupo (`sub`) | em `cuci`, `xlsx:cuci` | todo |
 | `no_cuci_sub` | `NO_CUCI_SUB` | texto | Nome de CUCI, subgrupo (`sub`) | em `cuci`, `xlsx:cuci` | todo |
 | `co_cuci_grupo` | `CO_CUCI_GRUPO` | texto | Código de CUCI, grupo | em `cuci`, `isic_cuci`, `xlsx:isic_cuci`, `xlsx:cuci` | todo |
 | `no_cuci_grupo` | `NO_CUCI_GRUPO` | texto | Nome de CUCI, grupo | em `cuci`, `isic_cuci`, `xlsx:isic_cuci`, `xlsx:cuci` | todo |
-| `co_cuci_divisao` | `CO_CUCI_DIVISAO` | texto (inteiro nas abas do XLSX) | Código de CUCI, divisão | em `cuci`, `xlsx:cuci` | todo |
+| `co_cuci_divisao` | `CO_CUCI_DIVISAO` | texto | Código de CUCI, divisão | em `cuci`, `xlsx:cuci` | todo |
 | `no_cuci_divisao` | `NO_CUCI_DIVISAO` | texto | Nome de CUCI, divisão | em `cuci`, `xlsx:cuci` | todo |
-| `co_cuci_sec` | `CO_CUCI_SEC` | texto (inteiro nas abas do XLSX) | Código de CUCI, seção | em `cuci`, `xlsx:cuci` | todo |
+| `co_cuci_sec` | `CO_CUCI_SEC` | texto | Código de CUCI, seção | em `cuci`, `xlsx:cuci` | todo |
 | `no_cuci_sec` | `NO_CUCI_SEC` | texto | Nome de CUCI, seção | em `cuci`, `xlsx:cuci` | todo |
 | `co_fat_agreg` | `CO_FAT_AGREG` | texto | Código de fator agregado | em `fat_agreg`, `ncm`, `xlsx:fat_agreg` | todo |
 | `no_fat_agreg` | `NO_FAT_AGREG` | texto | Nome de fator agregado | em `fat_agreg`, `xlsx:fat_agreg` | todo |
@@ -145,11 +145,11 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 | `no_isic_classe` | `NO_ISIC_CLASSE` | texto | Nome de ISIC, classe | em `isic`, `xlsx:isic` | todo |
 | `no_isic_classe_ing` | `NO_ISIC_CLASSE_ING` | texto | Nome de ISIC, classe em inglês | em `isic`, `xlsx:isic` | todo |
 | `no_isic_classe_esp` | `NO_ISIC_CLASSE_ESP` | texto | Nome de ISIC, classe em espanhol | em `isic`, `xlsx:isic` | todo |
-| `co_isic_grupo` | `CO_ISIC_GRUPO` | texto (inteiro nas abas do XLSX) | Código de ISIC, grupo | em `isic`, `xlsx:isic` | todo |
+| `co_isic_grupo` | `CO_ISIC_GRUPO` | texto | Código de ISIC, grupo | em `isic`, `xlsx:isic` | todo |
 | `no_isic_grupo` | `NO_ISIC_GRUPO` | texto | Nome de ISIC, grupo | em `isic`, `xlsx:isic` | todo |
 | `no_isic_grupo_ing` | `NO_ISIC_GRUPO_ING` | texto | Nome de ISIC, grupo em inglês | em `isic`, `xlsx:isic` | todo |
 | `no_isic_grupo_esp` | `NO_ISIC_GRUPO_ESP` | texto | Nome de ISIC, grupo em espanhol | em `isic`, `xlsx:isic` | todo |
-| `co_isic_divisao` | `CO_ISIC_DIVISAO` | texto (inteiro nas abas do XLSX) | Código de ISIC, divisão | em `isic`, `xlsx:isic` | todo |
+| `co_isic_divisao` | `CO_ISIC_DIVISAO` | texto | Código de ISIC, divisão | em `isic`, `xlsx:isic` | todo |
 | `no_isic_divisao` | `NO_ISIC_DIVISAO` | texto | Nome de ISIC, divisão | em `isic`, `xlsx:isic` | todo |
 | `no_isic_divisao_ing` | `NO_ISIC_DIVISAO_ING` | texto | Nome de ISIC, divisão em inglês | em `isic`, `xlsx:isic` | todo |
 | `no_isic_divisao_esp` | `NO_ISIC_DIVISAO_ESP` | texto | Nome de ISIC, divisão em espanhol | em `isic`, `xlsx:isic` | todo |
@@ -164,17 +164,17 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 | `co_sh6` | `CO_SH6` | texto | Código de Sistema Harmonizado, subposição (SH6) | em `ncm`, `sh`, `xlsx:sh` | todo |
 | `co_ppe` | `CO_PPE` | texto | Código de Pauta de Produtos Exportados (PPE) | em `ncm`, `ppe`, `xlsx:ppe` | todo |
 | `co_ppi` | `CO_PPI` | texto | Código de Pauta de Produtos Importados (PPI) | em `ncm`, `ppi`, `xlsx:ppi` | todo |
-| `co_siit` | `CO_SIIT` | texto (inteiro nas abas do XLSX) | Código de SIIT (setores industriais por intensidade tecnológica) | em `ncm`, `siit`, `xlsx:siit` | todo |
+| `co_siit` | `CO_SIIT` | texto | Código de SIIT (setores industriais por intensidade tecnológica) | em `ncm`, `siit`, `xlsx:siit` | todo |
 | `no_ncm_por` | `NO_NCM_POR` | texto | Nome de NCM em português | em `ncm`, `xlsx:sh`, `xlsx:isic_cuci`, `xlsx:cuci`, `xlsx:cgce`, `xlsx:isic` e mais 5 | todo |
 | `no_ncm_esp` | `NO_NCM_ESP` | texto | Nome de NCM em espanhol | em `ncm` | todo |
 | `no_ncm_ing` | `NO_NCM_ING` | texto | Nome de NCM em inglês | em `ncm` | todo |
 | `co_pais` | `CO_PAIS` | texto | Código de país | em `pais`, `pais_bloco`, `xlsx:pais`, `xlsx:pais_bloco` | todo |
-| `co_pais_ison3` | `CO_PAIS_ISON3` | texto (inteiro nas abas do XLSX) | Código numérico de país (ISO 3166-1 numérico, pelos valores: `004` Afeganistão) | 3 dígitos; em `pais`, `xlsx:pais` | todo |
+| `co_pais_ison3` | `CO_PAIS_ISON3` | texto | Código numérico de país (ISO 3166-1 numérico, pelos valores: `004` Afeganistão) | 3 dígitos; em `pais`, `xlsx:pais` | todo |
 | `co_pais_isoa3` | `CO_PAIS_ISOA3` | texto | Código alfabético de 3 letras do país (ISO 3166-1 alfa-3, pelos valores: `AFG` Afeganistão) | 3 letras; em `pais`, `xlsx:pais` | todo |
 | `no_pais` | `NO_PAIS` | texto | Nome de país | em `pais`, `xlsx:pais` | todo |
 | `no_pais_ing` | `NO_PAIS_ING` | texto | Nome de país em inglês | em `pais`, `xlsx:pais` | todo |
 | `no_pais_esp` | `NO_PAIS_ESP` | texto | Nome de país em espanhol | em `pais`, `xlsx:pais` | todo |
-| `co_bloco` | `CO_BLOCO` | texto (inteiro nas abas do XLSX) | Código de bloco de países | em `pais_bloco`, `xlsx:pais_bloco` | todo |
+| `co_bloco` | `CO_BLOCO` | texto | Código de bloco de países | em `pais_bloco`, `xlsx:pais_bloco` | todo |
 | `no_bloco` | `NO_BLOCO` | texto | Nome de bloco de países | em `pais_bloco`, `xlsx:pais_bloco` | todo |
 | `no_bloco_ing` | `NO_BLOCO_ING` | texto | Nome de bloco de países em inglês | em `pais_bloco`, `xlsx:pais_bloco` | todo |
 | `no_bloco_esp` | `NO_BLOCO_ESP` | texto | Nome de bloco de países em espanhol | em `pais_bloco`, `xlsx:pais_bloco` | todo |
@@ -199,33 +199,12 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 | `no_sec_por` | `NO_SEC_POR` | texto | Nome de Sistema Harmonizado, seção em português | em `sh`, `xlsx:sh` | todo |
 | `no_sec_esp` | `NO_SEC_ESP` | texto | Nome de Sistema Harmonizado, seção em espanhol | em `sh`, `xlsx:sh` | todo |
 | `no_sec_ing` | `NO_SEC_ING` | texto | Nome de Sistema Harmonizado, seção em inglês | em `sh`, `xlsx:sh` | todo |
-| `column16` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column17` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column18` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column19` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column20` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column21` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column22` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column23` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column24` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column25` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column26` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column27` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column28` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column29` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column30` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column31` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column32` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column33` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column34` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column35` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
-| `column36` | — (artefato) | texto | Coluna espúria de `sh`: o conversor divide em `;` os textos que contêm ponto e vírgula (por exemplo o de `no_sec_ing`, `Lives animals; Animal products`); o resto cai nestas colunas. Não é variável da fonte | só em `sh` | todo |
 | `no_siit` | `NO_SIIT` | texto | Nome de SIIT (setores industriais por intensidade tecnológica) | em `siit`, `xlsx:siit` | todo |
 | `co_uf` | `CO_UF` | texto | Código de unidade da federação | em `xlsx:uf`, `uf` | todo |
 | `sg_uf` | `SG_UF` | texto | Sigla da unidade da federação ou código especial (`EX`, `CB`, `MN`, `RE`, `ED`, `ND`, `ZN`) | tabela `uf`; em `xlsx:uf`, `xlsx:uf_mun`, `uf`, `uf_mun` | todo |
 | `no_uf` | `NO_UF` | texto | Nome de unidade da federação | em `xlsx:uf`, `uf` | todo |
 | `no_regiao` | `NO_REGIAO` | texto | Nome da região do Brasil | ex.: `REGIAO NORTE`; em `xlsx:uf`, `uf` | todo |
-| `co_mun_geo` | `CO_MUN_GEO` | texto (inteiro nas abas do XLSX) | Código do município (7 dígitos, o mesmo de `co_mun` dos datasets `*-mun`) | 7 dígitos; em `xlsx:uf_mun`, `uf_mun` | todo |
+| `co_mun_geo` | `CO_MUN_GEO` | texto | Código do município (7 dígitos, o mesmo de `co_mun` dos datasets `*-mun`) | 7 dígitos; em `xlsx:uf_mun`, `uf_mun` | todo |
 | `no_mun` | `NO_MUN` | texto | Nome de município | em `xlsx:uf_mun`, `uf_mun` | todo |
 | `no_mun_min` | `NO_MUN_MIN` | texto | Nome em minúsculas e com acentos (`min`) de município | em `xlsx:uf_mun`, `uf_mun` | todo |
 | `co_via` | `CO_VIA` | texto | Código de via de transporte | em `xlsx:via`, `via` | todo |
@@ -243,14 +222,14 @@ Um conjunto de tabelas de referência que o MDIC publica ao lado dos dados de co
 ## No lake
 
 - Dataset `comex/auxiliary-tables`, **sem partição**. Cada tabela vira um Parquet: `<tabela>.parquet` para os CSV e `tabelas-auxiliares__<n>.parquet` para as abas do XLSX (`__1` a `__16` e `__indice`). Não há coluna que diga de qual tabela a linha veio: só o nome do arquivo.
-- Os CSV são lidos pelo DuckDB em latin-1, separador `;`, tudo como texto, com nomes em minúsculas. As abas do XLSX são lidas pelo Polars como texto e depois tipadas: coluna de código conhecida (`co_ncm`, `co_pais`, `co_uf`, `co_urf`, `co_via` etc.) continua texto; as demais viram inteiro ou decimal quando **todo** valor converte. Por isso a mesma coluna é texto nos CSV e inteiro em algumas abas (`co_cgce_n3`, `co_cuci_sub`, `co_siit`, `co_pais_ison3`, `co_bloco`, `co_mun_geo` e outras): a coluna do esquema de referência tem mais de um tipo.
+- Os CSV são lidos pelo DuckDB em latin-1, separador `;`, com o dialeto fixo (campos entre aspas duplas, aspa dentro do texto escrita `""`), tudo como texto, com nomes em minúsculas. Linhas com aspas fora do padrão são reparadas sem perder nenhuma linha. As abas do XLSX são lidas pelo Polars como texto e depois tipadas: toda coluna de código (`co_*` das tabelas auxiliares, como `co_ncm`, `co_pais`, `co_cgce_n3`, `co_cuci_sub`, `co_siit`, `co_pais_ison3`, `co_bloco`, `co_mun_geo`) continua texto, igual ao CSV; as demais viram inteiro ou decimal quando **todo** valor converte (só a coluna `numero_da_aba` da aba `indice`).
 - Os espaços à direita não são removidos (`sg_unid` tem `KGL  `).
-- A tabela `sh` sai **com defeito** (ver Cuidados de uso).
+- Até a versão 2.5.2 o dialeto do CSV era deduzido pelo DuckDB, o que corrompia a tabela `sh` e alterava aspas e apóstrofos de outras tabelas (veja Cuidados de uso).
 
 ## Cuidados de uso
 
-- **`sh` (CSV) está mal lido no lake.** O DuckDB não reconhece as aspas do `sh@20261006.csv` e (1) mantém as aspas literais nos valores (`"010110"`, `"Animais vivos..."`) em 105.906 células, e (2) divide em `;` o texto `Lives animals; Animal products`, de modo que 4.918 das 6.620 linhas ganham valor nas colunas espúrias `column16` a `column36` (conferido em 2026-11-10). Para o Sistema Harmonizado use a aba `tabelas-auxiliares__1` (a NCM com o SH) ou refaça a leitura do CSV com aspas. Nenhuma outra tabela tem o problema; as aspas que aparecem em `nbm`, `ncm` e `ncm-vigente` fazem parte do texto da fonte.
-- **Tipos diferentes para a mesma coluna.** O código `co_pais_ison3` é texto (`004`) nos CSV e inteiro (`4`) na aba `tabelas-auxiliares__10`; idem `co_cgce_*`, `co_cuci_sub`, `co_siit`, `co_bloco` e `co_mun_geo`. Para cruzar com os dados de comércio use o CSV (texto com zeros à esquerda) ou converta com `LPAD`.
+- **Lake gerado até a versão 2.5.2.** O DuckDB deduzia o dialeto dos CSV e errava em `sh` (aspas literais em 105.906 células e textos com `;`, como `Lives animals; Animal products`, divididos: 4.918 das 6.620 linhas ganhavam valores em colunas espúrias `column16` a `column36`). Também deixava `""` literal nas tabelas `cgce`, `ppe` e `ppi` e apagava o apóstrofo dos nomes em `uf_mun` (`LAGOA D'ANTA` virava `LAGOA DANTA`). O conversor atual fixa o dialeto: `sh` tem as 16 colunas do cabeçalho e 6.620 linhas, sem aspas literais. Se o lake foi gerado antes, reconverta (veja o `CHANGELOG.md`). Linhas da fonte com aspa solta no meio do texto (três em `sh`, por exemplo `oriented strand board" (OSB)`) são reparadas e podem sair com a aspa a menos. As aspas que restam em `nbm`, `ncm`, `cuci` e outras fazem parte do texto da fonte.
+- **Códigos são texto nos CSV e nas abas.** `co_pais_ison3` (`004`), `co_cgce_*`, `co_cuci_sub`, `co_siit`, `co_bloco` e `co_mun_geo` têm o mesmo tipo (texto) nos dois caminhos. Até a versão 2.5.2 as abas do XLSX os tinham como inteiro (`4`), sem os zeros à esquerda. A coluna `numero_da_aba` da aba `indice` é a única inteira.
 - **Códigos de comércio são texto.** `co_ncm` (8 dígitos), `co_pais` (3), `co_urf` (7), `co_via` (2) e `sh4` (4) mantêm os zeros à esquerda nos CSV e no dataset `ncm-vigente`.
 - **Duas tabelas de NCM.** `ncm` (CSV, 13.753 NCM com as classificações) e a aba `tabelas-auxiliares__1` (13.741 linhas) diferem, e `ncm-vigente` (outro dataset) tem 10.516 NCM de 8 dígitos vigentes em 2026-11-05. NCM antigas dos dados de 1997 em diante existem em `ncm` (todas as NCM das amostras de exportação e importação foram encontradas), mas não necessariamente em `ncm-vigente`.
 - **PPI só para importação e PPE só para exportação**, segundo a fonte.
@@ -270,7 +249,7 @@ WHERE e.ano = 2025
 GROUP BY ALL ORDER BY bi_usd DESC LIMIT 5;
 ```
 
-Descrição dos países de destino, sem usar a aba de inteiros:
+Descrição dos países de destino:
 
 ```python
 import polars as pl

@@ -76,7 +76,18 @@ CODE_COLUMNS = frozenset(
     {"co_ncm", "co_nbm", "co_sh2", "co_sh4", "co_sh6", "co_urf", "co_pais", "co_mun"}
     | {"co_unid", "co_via", "co_cuci_item", "co_cgce_3", "co_isic_classe", "co_ppi"}
     | {"co_ppe", "co_fat_agreg", "co_uf", "sg_uf", "sg_uf_ncm", "sg_uf_nbm"}
+    # tabelas auxiliares: o CSV lê tudo como texto, então as abas do XLSX também
+    # (antes viravam inteiro e a mesma coluna mudava de tipo entre as fontes).
+    | {"co_cgce_n1", "co_cgce_n2", "co_cgce_n3", "co_bloco", "co_mun_geo"}
+    | {"co_cuci_sec", "co_cuci_divisao", "co_cuci_grupo", "co_cuci_sub"}
+    | {"co_isic_secao", "co_isic_divisao", "co_isic_grupo", "co_siit"}
+    | {"co_pais_isoa3", "co_pais_ison3", "co_ncm_secrom"}
+    | {"co_exp_set", "co_exp_subset"}
 )
+#: dialeto fixo dos CSV do Comex: campos entre aspas duplas, aspa dentro do texto
+#: escrita ``""``. Sem isso o DuckDB deduz o dialeto e, em arquivos com ``;`` ou
+#: aspas no texto (``sh``), deixa as aspas literais e racha as linhas.
+CSV_DIALECT: dict[str, str] = {"quote": '"', "escape": '"'}
 _TABULAR_MEMBERS = (".csv", ".xlsx")
 
 _YEAR = re.compile(r"[-_](?P<ano>(?:19|20)\d{2})(?:@|\.|$|\b)")
@@ -441,6 +452,7 @@ class LakeConverter:
                             separator=";",
                             encoding="latin-1",
                             converter=tag,
+                            **CSV_DIALECT,
                         )
                     statuses = [written.status]
                 elif suffix == ".xlsx":
@@ -525,6 +537,7 @@ class LakeConverter:
                             separator=";",
                             encoding="latin-1",
                             converter=tag,
+                            **CSV_DIALECT,
                         )
                         statuses.append(written.status)
                     else:
