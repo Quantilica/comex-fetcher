@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from quantilica.cli.sdk import FetcherApp
+from quantilica.core.registry import FetcherInfo
 from quantilica.core.storage import expected_format_for_path
 from quantilica.core.sync import FreshnessPolicy
 
@@ -81,6 +82,19 @@ fetcher = ComexFetcherApp(
     default_output=_DEFAULT_OUTPUT,
     name="comex-fetcher",
     help="Dados de comércio exterior (SECEX/COMEX).",
+    info=FetcherInfo(
+        id="comex",
+        nome="Comércio Exterior (Comex Stat)",
+        aliases=("secex-comex",),
+        orgao="Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC)",
+        licenca="Creative Commons Atribuição-SemDerivações 3.0 (CC BY-ND 3.0)",
+        homepage=(
+            "https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/"
+            "estatisticas/base-de-dados-bruta"
+        ),
+        cadencia="monthly",
+        dominio="macroeconomia",
+    ),
     groups_dict=GROUPS,
     aliases_dict=GROUP_ALIASES,
     list_datasets=list_datasets,
