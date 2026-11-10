@@ -1,0 +1,89 @@
+{
+  "fonte": "comex",
+  "dataset": "imp",
+  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "particoes": [
+    "ano"
+  ],
+  "colunas": [
+    {
+      "nome": "co_ano",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_mes",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ncm",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_unid",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_pais",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "sg_uf_ncm",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_via",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_urf",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "qt_estat",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "kg_liquido",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_fob",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_frete",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_seguro",
+      "tipos": [
+        "string"
+      ]
+    }
+  ],
+  "arquivos": 5
+}

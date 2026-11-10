@@ -101,6 +101,10 @@ comex_fetcher.download_all(data_dir)
 | REPETRO | `exp-repetro`, `imp-repetro` |
 | Tabelas auxiliares | `ncm`, `sh`, `cuci`, `cgce`, `isic`, `siit`, `fat-agreg`, `unidade`, `ppi`, `ppe`, `grupo`, `pais`, `pais-bloco`, `uf`, `uf-mun`, `via`, `urf`, `isic-cuci`, `nbm`, `ncm-nbm` |
 
+## Documentação dos dados
+
+O que cada dataset contém, de onde vem, como chega ao lake e os cuidados de uso: [docs/README.md](docs/README.md).
+
 ## Migração de comexdown
 
 Se você usava o pacote `comexdown`, atualize a instalação e os imports:

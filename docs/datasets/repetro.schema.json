@@ -1,0 +1,54 @@
+{
+  "fonte": "comex",
+  "dataset": "repetro",
+  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "particoes": [],
+  "colunas": [
+    {
+      "nome": "co_ano",
+      "tipos": [
+        "int64"
+      ]
+    },
+    {
+      "nome": "co_mes",
+      "tipos": [
+        "int64"
+      ]
+    },
+    {
+      "nome": "co_ncm",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "co_pais",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "vl_fob",
+      "tipos": [
+        "double",
+        "int64"
+      ]
+    },
+    {
+      "nome": "kg_liquido",
+      "tipos": [
+        "double",
+        "int64"
+      ]
+    },
+    {
+      "nome": "qt_estat",
+      "tipos": [
+        "double",
+        "int64"
+      ]
+    }
+  ],
+  "arquivos": 2
+}

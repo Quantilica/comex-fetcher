@@ -1,0 +1,57 @@
+{
+  "fonte": "comex",
+  "dataset": "validacao",
+  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "particoes": [],
+  "colunas": [
+    {
+      "nome": "arquivo",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ano",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "kg_liquido",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_fob",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "numero_linhas",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "qt_estat",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_frete",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "vl_seguro",
+      "tipos": [
+        "string"
+      ]
+    }
+  ],
+  "arquivos": 4
+}

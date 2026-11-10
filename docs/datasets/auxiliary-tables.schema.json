@@ -1,0 +1,888 @@
+{
+  "fonte": "comex",
+  "dataset": "auxiliary-tables",
+  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "particoes": [],
+  "colunas": [
+    {
+      "nome": "co_cgce_n3",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n3",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n3_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n3_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cgce_n2",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n2",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n2_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n2_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cgce_n1",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n1",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n1_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cgce_n1_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cuci_item",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cuci_item",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cuci_sub",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cuci_sub",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cuci_grupo",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cuci_grupo",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cuci_divisao",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cuci_divisao",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_cuci_sec",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_cuci_sec",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_fat_agreg",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_fat_agreg",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_fat_agreg_gp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_exp_subset",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_subset_por",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_subset_esp",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_subset_ing",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_exp_set",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_set",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_set_esp",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_exp_set_ing",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_isic_classe",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_classe",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_classe_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_classe_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_isic_grupo",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_grupo",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_grupo_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_grupo_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_isic_divisao",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_divisao",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_divisao_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_divisao_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_isic_secao",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_secao",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_secao_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_isic_secao_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_nbm",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_nbm",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ncm",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_unid",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_sh6",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ppe",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ppi",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_siit",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ncm_por",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ncm_esp",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ncm_ing",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "co_pais",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_pais_ison3",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_pais_isoa3",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_pais",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_pais_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_pais_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_bloco",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_bloco",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_bloco_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_bloco_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppe",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppe_min",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppe_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppi",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppi_min",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_ppi_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh6_por",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh6_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh6_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_sh4",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh4_por",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh4_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh4_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_sh2",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh2_por",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh2_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sh2_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_ncm_secrom",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sec_por",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sec_esp",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_sec_ing",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "column16",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column17",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column18",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column19",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column20",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column21",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column22",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column23",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column24",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column25",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column26",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column27",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column28",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column29",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column30",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column31",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column32",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column33",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column34",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column35",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "column36",
+      "tipos": [
+        "string"
+      ]
+    },
+    {
+      "nome": "no_siit",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_uf",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "sg_uf",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_uf",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_regiao",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_mun_geo",
+      "tipos": [
+        "int64",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_mun",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_mun_min",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_via",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_via",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "co_urf",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_urf",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "no_unid",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "sg_unid",
+      "tipos": [
+        "large_string",
+        "string"
+      ]
+    },
+    {
+      "nome": "numero_da_aba",
+      "tipos": [
+        "int64"
+      ]
+    },
+    {
+      "nome": "nome",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "descricao",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "arquivo_referencia",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "chave_de_cruzamento",
+      "tipos": [
+        "large_string"
+      ]
+    }
+  ],
+  "arquivos": 37
+}

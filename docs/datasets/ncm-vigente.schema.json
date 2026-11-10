@@ -1,0 +1,75 @@
+{
+  "fonte": "comex",
+  "dataset": "ncm-vigente",
+  "gerado_em": "2026-11-10T13:58:58+00:00",
+  "particoes": [],
+  "colunas": [
+    {
+      "nome": "codigo",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "codigo_ncm",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "descricao",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "data_inicio",
+      "tipos": [
+        "date32[day]"
+      ]
+    },
+    {
+      "nome": "data_fim",
+      "tipos": [
+        "date32[day]"
+      ]
+    },
+    {
+      "nome": "tipo_ato_ini",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "numero_ato_ini",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "ano_ato_ini",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "nivel_digitos",
+      "tipos": [
+        "int32"
+      ]
+    },
+    {
+      "nome": "vigente_em",
+      "tipos": [
+        "large_string"
+      ]
+    },
+    {
+      "nome": "ato",
+      "tipos": [
+        "large_string"
+      ]
+    }
+  ],
+  "arquivos": 1
+}
