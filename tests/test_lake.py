@@ -297,3 +297,23 @@ def test_codigos_das_abas_do_xlsx_ficam_texto_como_no_csv(tmp_path: Path) -> Non
     assert aba.schema["co_siit"] == csv.schema["co_siit"] == pl.String
     assert aba.schema["co_pais_ison3"] == pl.String
     assert aba["co_siit"][0] == "1"
+
+
+def test_csv_com_aspa_solta_na_amostra_e_reparado_sem_perder_linha(
+    tmp_path: Path,
+) -> None:
+    """Com quote/escape fixos a aspa solta derruba a detecção do DuckDB."""
+    aux = tmp_path / "raw" / "auxiliary-tables"
+    aux.mkdir(parents=True)
+    linhas = [f'"{9000 + i}";"Item {i}";"x"\n' for i in range(60)]
+    linhas[1] = '"9001";"Paineis oriented strand board" (OSB)";"x"\n'
+    (aux / "ppe@20261006.csv").write_bytes(
+        ('"CO_PPE";"NO_PPE";"NO_PPE_ING"\n' + "".join(linhas)).encode("latin-1")
+    )
+    res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+    assert (res.converted, res.errors) == (1, [])
+    df = scan_dataset(tmp_path / "lake" / SOURCE_ID / "auxiliary-tables").collect()
+    assert df.height == 60
+    assert df.filter(pl.col("co_ppe") == "9001")["no_ppe"][0] == (
+        'Paineis oriented strand board" (OSB)'
+    )

@@ -230,7 +230,13 @@ def repair_csv_quotes(src: Path, dst: Path, *, encoding: str = "latin-1") -> int
 
 
 def _is_csv_error(exc: BaseException) -> bool:
-    return "CSV Error" in str(exc) or "csv" in type(exc).__name__.lower()
+    message = str(exc)
+    return (
+        "CSV Error" in message
+        # com quote/escape fixos, a aspa solta derruba a detecção do DuckDB
+        or "Error when sniffing" in message
+        or "csv" in type(exc).__name__.lower()
+    )
 
 
 def _write_csv(
