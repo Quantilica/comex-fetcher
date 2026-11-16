@@ -1,0 +1,17 @@
+_commit: v0.2.1
+_src_path: /home/dk/code/Quantilica/fetcher-template
+author_email: daniel@dkko.me
+author_name: Komesu, D.K.
+cadencia: monthly
+description: A commandline utility to download Brazil's foreign trade data
+domain: comex
+dominio: macroeconomia
+has_lake: true
+homepage: https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/estatisticas/base-de-dados-bruta
+licenca: Creative Commons Atribuição-SemDerivações 3.0 (CC BY-ND 3.0)
+orgao: Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC)
+package_name: comex-fetcher
+package_slug: comex_fetcher
+protocol: http
+source_id: comex
+source_name: Comércio Exterior (Comex Stat)
