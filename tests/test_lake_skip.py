@@ -312,3 +312,37 @@ def test_lake_sem_declaracao_reconverte_uma_vez_e_depois_pula(
     res3 = converter.convert(raw, lake, datasets=[dataset])
     assert (res3.converted, res3.skipped, res3.errors) == (0, n, [])
     assert acessos == []
+
+
+def test_membro_nao_tabular_de_mesmo_stem_nao_satisfaz_a_declaracao(
+    tmp_path: Path,
+) -> None:
+    """``a.txt`` não pode herdar o id da saída de ``a.csv``: o erro volta sempre."""
+    raw = tmp_path / "raw" / "repetro"
+    raw.mkdir(parents=True)
+    z = raw / "repetro@20261006.zip"
+    with zipfile.ZipFile(z, "w") as zf:
+        zf.writestr("a.csv", '"CO_X";"NO_X"\n"1";"um"\n')
+        zf.writestr("a.txt", "oi")
+    _sidecar(z)
+    for _ in range(3):
+        res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+        assert (res.converted, res.skipped) == (0, 0)
+        assert len(res.errors) == 1
+        assert "membros não tabulares ignorados: a.txt" in res.errors[0]
+
+
+def test_xlsx_ilegivel_de_mesmo_stem_de_csv_nao_satisfaz_a_declaracao(
+    tmp_path: Path,
+) -> None:
+    raw = tmp_path / "raw" / "repetro"
+    raw.mkdir(parents=True)
+    z = raw / "repetro@20261006.zip"
+    with zipfile.ZipFile(z, "w") as zf:
+        zf.writestr("a.csv", '"CO_X";"NO_X"\n"1";"um"\n')
+        zf.writestr("a.xlsx", "não é uma planilha")
+    _sidecar(z)
+    for _ in range(3):
+        res = converter.convert(tmp_path / "raw", tmp_path / "lake")
+        assert (res.converted, res.skipped) == (0, 0)
+        assert len(res.errors) == 1 and "calamine" in res.errors[0]

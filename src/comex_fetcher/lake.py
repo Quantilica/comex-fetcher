@@ -326,6 +326,11 @@ def _first_line(exc: BaseException) -> str:
     return message.splitlines()[0] if message else repr(exc)
 
 
+def _id_de_erro(nome: str) -> str:
+    """Id declarado para o que não vira saída: nunca é uma chave real do lake."""
+    return f"!erro/{nome}"
+
+
 class LakeConverter:
     """Converter registered under the ``quantilica.lake`` entry point."""
 
@@ -533,9 +538,11 @@ class LakeConverter:
 
         Um CSV vira uma saída, um XLSX uma por aba com dados (por isso é aberto
         aqui uma vez só para listar as abas). O que não pode ser convertido (membro
-        não tabular, XLSX ilegível) entra na lista com o id do membro e nunca é
-        gravado: a declaração fica incompleta de propósito e o ZIP é reaberto a
-        cada build, onde o erro volta a ser contado, como acontece sem o pulo.
+        não tabular, XLSX ilegível) entra na lista com um id ``!erro/<membro>``
+        que nunca coincide com uma chave real (a chave composta tira a extensão e
+        ``a.txt`` colidiria com a saída de ``a.csv``) e nunca é gravado: a
+        declaração fica incompleta de propósito e o ZIP é reaberto a cada build,
+        onde o erro volta a ser contado, como acontece sem o pulo.
         """
         outputs: list[str] = []
         for info in tabular:
@@ -552,7 +559,7 @@ class LakeConverter:
                         shutil.copyfileobj(src, out, 1 << 20)
                     sheets = list(read_excel_sheets(dest))
                 except Exception:  # noqa: BLE001 - o erro volta na gravação
-                    outputs.append(output_id(part_vals, key))
+                    outputs.append(_id_de_erro(info.filename))
                     continue
             outputs.extend(
                 output_id(
@@ -560,9 +567,7 @@ class LakeConverter:
                 )
                 for sheet in sheets
             )
-        outputs.extend(
-            output_id(part_vals, composite_file_key(path, name)) for name in bad
-        )
+        outputs.extend(_id_de_erro(name) for name in bad)
         return outputs
 
     @staticmethod
