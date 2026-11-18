@@ -8,10 +8,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [Não lançado]
 
 ### Corrigido
-- `lake`: o build sem mudança não lê mais o bruto. CSV e JSON (`ncm-vigente`) conferem `is_current` (sha256 do sidecar e rodapé do Parquet) antes de `check_file`; XLSX e ZIP conferem `origin_recorded` e, quando todo Parquet que os cita registra o sha256 atual, contam abas e membros pelos rodapés e seguem sem abrir a planilha nem o ZIP (antes, todo membro era extraído para um temporário antes de decidir). As contagens de `converted`/`skipped`, `force` e o bruto novo ou alterado seguem como antes. Limitações: um membro ou aba que falhou numa rodada anterior (sem Parquet) não é reexaminado enquanto os demais estiverem em dia, e o erro "membros não tabulares ignorados" de um ZIP que também tem membros tabulares deixa de se repetir a cada build; `force` ou alterar o arquivo reabre o ZIP.
+- `lake`: o build sem mudança não lê mais o bruto. CSV e JSON (`ncm-vigente`) conferem `is_current` (sha256 do sidecar e rodapé do Parquet) antes de `check_file`. XLSX e ZIP declaram, em cada Parquet, a lista de todas as saídas do arquivo (`origin_outputs`: uma por aba, por CSV e por aba de XLSX de membro, listadas antes da primeira gravação) e só são pulados, sem abrir a planilha nem o ZIP, quando todas existem com o sha256 atual (`origin_complete`); antes, todo membro era extraído para um temporário antes de decidir. Uma conversão interrompida, um membro ou aba que falha e o erro "membros não tabulares ignorados" deixam a declaração incompleta de propósito, e o arquivo é reaberto e o erro contado a cada build, como antes. Lake gravado sem a declaração reconverte uma vez e depois pula. As contagens de `converted`/`skipped`, `force` e o bruto novo ou alterado seguem como antes.
 
 ### Alterado
-- Piso de `quantilica-analytics` do extra `analysis` sobe para 0.15.0 (`LakeWriter.origin_recorded`).
+- Piso de `quantilica-analytics` do extra `analysis` sobe para 0.15.0 (`origin_outputs`, `LakeWriter.origin_complete`).
 - CI e infraestrutura alinhados ao template (fetcher-template v0.2.1).
 
 ### Adicionado

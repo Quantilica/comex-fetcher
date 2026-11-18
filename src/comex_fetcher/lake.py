@@ -25,13 +25,7 @@ from typing import TYPE_CHECKING, Any
 try:
     import duckdb
     import polars as pl
-    import pyarrow as pa
-    import pyarrow.parquet as pq
-    from quantilica.analytics.lake import (
-        LakeError,
-        LakeWriter,
-        footer_from_metadata,
-    )
+    from quantilica.analytics.lake import LakeError, LakeWriter, output_id
     from quantilica.core.lake import (
         DatasetDescriptor,
         composite_file_key,
@@ -332,30 +326,6 @@ def _first_line(exc: BaseException) -> str:
     return message.splitlines()[0] if message else repr(exc)
 
 
-def _recorded_keys(dataset_dir: Path) -> dict[str, set[str]]:
-    """``{arquivo de origem: chaves de arquivo}`` lidos só dos rodapés do dataset.
-
-    Serve para contar as abas/membros de um XLSX ou ZIP pulado sem abri-lo: cada
-    aba ou membro convertido deixou um ``file_key`` no rodapé do seu Parquet,
-    citando o arquivo de origem.
-    """
-    found: dict[str, set[str]] = {}
-    if not dataset_dir.is_dir():
-        return found
-    for parquet in sorted(dataset_dir.rglob("*.parquet")):
-        if ".tmp" in parquet.relative_to(dataset_dir).parts:
-            continue
-        try:
-            footer = footer_from_metadata(pq.read_metadata(parquet))
-        except (OSError, pa.ArrowException):
-            continue
-        origin = footer.get("quantilica.origin_file")
-        key = footer.get("quantilica.file_key")
-        if origin and key:
-            found.setdefault(origin, set()).add(key)
-    return found
-
-
 class LakeConverter:
     """Converter registered under the ``quantilica.lake`` entry point."""
 
@@ -428,7 +398,6 @@ class LakeConverter:
                 result.skipped += 1
 
         writers: dict[str, LakeWriter] = {}
-        recorded: dict[Path, dict[str, set[str]]] = {}
 
         for path in files:
             dataset_id = resolve_dataset(path)
@@ -470,19 +439,16 @@ class LakeConverter:
                 # Decisão de pular antes de qualquer acesso ao bruto (o bruto pode
                 # estar em disco de rede lento): só o sidecar e os rodapés do lake.
                 # CSV e JSON viram um Parquet de chave conhecida; XLSX e ZIP só
-                # conhecem suas abas e membros depois de abertos, então basta que
-                # todo Parquet que os cita registre o sha256 atual.
+                # conhecem suas abas e membros depois de abertos, então cada
+                # Parquet declara a lista de saídas do arquivo (origin_outputs) e o
+                # pulo exige que todas existam: conversão interrompida ou membro
+                # que falha deixa a declaração incompleta e o arquivo é reaberto.
                 if dataset_id == "ncm-vigente" or suffix == ".csv":
                     if writer.is_current(path, partitions=part_vals):
                         result.skipped += 1
                         continue
-                elif suffix in {".xlsx", ".zip"} and writer.origin_recorded(path):
-                    keys = recorded.get(writer.dataset_dir)
-                    if keys is None:
-                        keys = recorded[writer.dataset_dir] = _recorded_keys(
-                            writer.dataset_dir
-                        )
-                    result.skipped += max(len(keys.get(path.name, ())), 1)
+                elif suffix in {".xlsx", ".zip"} and writer.origin_complete(path):
+                    result.skipped += len(writer.origin_outputs(path) or ()) or 1
                     continue
 
                 if dataset_id == "ncm-vigente":
@@ -540,6 +506,9 @@ class LakeConverter:
         sheets = read_excel_sheets(path)
         if not sheets:
             raise LakeError(f"{path.name}: planilha sem abas com dados")
+        outputs = [
+            output_id(part_vals, composite_file_key(path, name)) for name in sheets
+        ]
         return [
             writer.write_polars(
                 frame,
@@ -547,9 +516,54 @@ class LakeConverter:
                 partitions=part_vals,
                 file_key_name=composite_file_key(path, name),
                 converter=tag,
+                origin_outputs=outputs,
             ).status
             for name, frame in sheets.items()
         ]
+
+    @staticmethod
+    def _zip_outputs(
+        zf: zipfile.ZipFile,
+        path: Path,
+        part_vals: dict[str, Any],
+        tabular: list[zipfile.ZipInfo],
+        bad: list[str],
+    ) -> list[str]:
+        """Todas as saídas do ZIP, conhecidas antes da primeira gravação.
+
+        Um CSV vira uma saída, um XLSX uma por aba com dados (por isso é aberto
+        aqui uma vez só para listar as abas). O que não pode ser convertido (membro
+        não tabular, XLSX ilegível) entra na lista com o id do membro e nunca é
+        gravado: a declaração fica incompleta de propósito e o ZIP é reaberto a
+        cada build, onde o erro volta a ser contado, como acontece sem o pulo.
+        """
+        outputs: list[str] = []
+        for info in tabular:
+            key = composite_file_key(path, info.filename)
+            if not info.filename.lower().endswith(".xlsx"):
+                outputs.append(output_id(part_vals, key))
+                continue
+            with tempfile.TemporaryDirectory(
+                dir=os.environ.get("QUANTILICA_LAKE_SCRATCH") or None
+            ) as tmp:
+                dest = Path(tmp) / "membro.xlsx"
+                try:
+                    with zf.open(info) as src, open(dest, "wb") as out:
+                        shutil.copyfileobj(src, out, 1 << 20)
+                    sheets = list(read_excel_sheets(dest))
+                except Exception:  # noqa: BLE001 - o erro volta na gravação
+                    outputs.append(output_id(part_vals, key))
+                    continue
+            outputs.extend(
+                output_id(
+                    part_vals, composite_file_key(path, f"{info.filename}__{sheet}")
+                )
+                for sheet in sheets
+            )
+        outputs.extend(
+            output_id(part_vals, composite_file_key(path, name)) for name in bad
+        )
+        return outputs
 
     @staticmethod
     def _write_zip(
@@ -571,6 +585,7 @@ class LakeConverter:
             tabular = [i for i in members if i.filename not in bad]
             if not tabular:
                 raise LakeError(f"{path.name}: ZIP sem membro CSV/XLSX")
+            outputs = LakeConverter._zip_outputs(zf, path, part_vals, tabular, bad)
             for info in tabular:
                 key = composite_file_key(path, info.filename)
                 ext = Path(info.filename).suffix.lower()
@@ -592,6 +607,7 @@ class LakeConverter:
                             separator=";",
                             encoding="latin-1",
                             converter=tag,
+                            origin_outputs=outputs,
                             **CSV_DIALECT,
                         )
                         statuses.append(written.status)
@@ -606,6 +622,7 @@ class LakeConverter:
                                         path, f"{info.filename}__{sheet}"
                                     ),
                                     converter=tag,
+                                    origin_outputs=outputs,
                                 ).status
                             )
         if bad:
