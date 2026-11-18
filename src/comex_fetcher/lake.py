@@ -25,7 +25,13 @@ from typing import TYPE_CHECKING, Any
 try:
     import duckdb
     import polars as pl
-    from quantilica.analytics.lake import LakeError, LakeWriter
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from quantilica.analytics.lake import (
+        LakeError,
+        LakeWriter,
+        footer_from_metadata,
+    )
     from quantilica.core.lake import (
         DatasetDescriptor,
         composite_file_key,
@@ -326,6 +332,30 @@ def _first_line(exc: BaseException) -> str:
     return message.splitlines()[0] if message else repr(exc)
 
 
+def _recorded_keys(dataset_dir: Path) -> dict[str, set[str]]:
+    """``{arquivo de origem: chaves de arquivo}`` lidos só dos rodapés do dataset.
+
+    Serve para contar as abas/membros de um XLSX ou ZIP pulado sem abri-lo: cada
+    aba ou membro convertido deixou um ``file_key`` no rodapé do seu Parquet,
+    citando o arquivo de origem.
+    """
+    found: dict[str, set[str]] = {}
+    if not dataset_dir.is_dir():
+        return found
+    for parquet in sorted(dataset_dir.rglob("*.parquet")):
+        if ".tmp" in parquet.relative_to(dataset_dir).parts:
+            continue
+        try:
+            footer = footer_from_metadata(pq.read_metadata(parquet))
+        except (OSError, pa.ArrowException):
+            continue
+        origin = footer.get("quantilica.origin_file")
+        key = footer.get("quantilica.file_key")
+        if origin and key:
+            found.setdefault(origin, set()).add(key)
+    return found
+
+
 class LakeConverter:
     """Converter registered under the ``quantilica.lake`` entry point."""
 
@@ -398,6 +428,7 @@ class LakeConverter:
                 result.skipped += 1
 
         writers: dict[str, LakeWriter] = {}
+        recorded: dict[Path, dict[str, set[str]]] = {}
 
         for path in files:
             dataset_id = resolve_dataset(path)
@@ -436,6 +467,24 @@ class LakeConverter:
             try:
                 tag = f"comex-fetcher {__version__}"
                 suffix = path.suffix.lower()
+                # Decisão de pular antes de qualquer acesso ao bruto (o bruto pode
+                # estar em disco de rede lento): só o sidecar e os rodapés do lake.
+                # CSV e JSON viram um Parquet de chave conhecida; XLSX e ZIP só
+                # conhecem suas abas e membros depois de abertos, então basta que
+                # todo Parquet que os cita registre o sha256 atual.
+                if dataset_id == "ncm-vigente" or suffix == ".csv":
+                    if writer.is_current(path, partitions=part_vals):
+                        result.skipped += 1
+                        continue
+                elif suffix in {".xlsx", ".zip"} and writer.origin_recorded(path):
+                    keys = recorded.get(writer.dataset_dir)
+                    if keys is None:
+                        keys = recorded[writer.dataset_dir] = _recorded_keys(
+                            writer.dataset_dir
+                        )
+                    result.skipped += max(len(keys.get(path.name, ())), 1)
+                    continue
+
                 if dataset_id == "ncm-vigente":
                     check_file(path)
                     written = writer.write_polars(
