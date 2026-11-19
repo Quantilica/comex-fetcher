@@ -5,19 +5,20 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [2.7.1] - 2026-11-19
 
-### Corrigido
-- `lake`: o build sem mudança não lê mais o bruto. CSV e JSON (`ncm-vigente`) conferem `is_current` (sha256 do sidecar e rodapé do Parquet) antes de `check_file`. XLSX e ZIP declaram, em cada Parquet, a lista de todas as saídas do arquivo (`origin_outputs`: uma por aba, por CSV e por aba de XLSX de membro, listadas antes da primeira gravação) e só são pulados, sem abrir a planilha nem o ZIP, quando todas existem com o sha256 atual (`origin_complete`); antes, todo membro era extraído para um temporário antes de decidir. Uma conversão interrompida, um membro ou aba que falha e o erro "membros não tabulares ignorados" (declarado com ids `!erro/<membro>`, que nunca coincidem com a chave de uma saída real, mesmo com `a.csv` e `a.txt` no mesmo ZIP) deixam a declaração incompleta de propósito, e o arquivo é reaberto e o erro contado a cada build, como antes. Lake gravado sem a declaração reconverte uma vez e depois pula. As contagens de `converted`/`skipped`, `force` e o bruto novo ou alterado seguem como antes.
+### Adicionado
+
+- Testes: identidade do registro conferida.
 
 ### Alterado
+
 - Piso de `quantilica-analytics` do extra `analysis` sobe para 0.15.0 (`origin_outputs`, `LakeWriter.origin_complete`).
 - CI e infraestrutura alinhados ao template (fetcher-template v0.2.1).
 
-### Adicionado
-- Testes: identidade do registro conferida.
-
 ### Corrigido
+
+- `lake`: o build sem mudança não lê mais o bruto. CSV e JSON (`ncm-vigente`) conferem `is_current` (sha256 do sidecar e rodapé do Parquet) antes de `check_file`. XLSX e ZIP declaram, em cada Parquet, a lista de todas as saídas do arquivo (`origin_outputs`: uma por aba, por CSV e por aba de XLSX de membro, listadas antes da primeira gravação) e só são pulados, sem abrir a planilha nem o ZIP, quando todas existem com o sha256 atual (`origin_complete`); antes, todo membro era extraído para um temporário antes de decidir. Uma conversão interrompida, um membro ou aba que falha e o erro "membros não tabulares ignorados" (declarado com ids `!erro/<membro>`, que nunca coincidem com a chave de uma saída real, mesmo com `a.csv` e `a.txt` no mesmo ZIP) deixam a declaração incompleta de propósito, e o arquivo é reaberto e o erro contado a cada build, como antes. Lake gravado sem a declaração reconverte uma vez e depois pula. As contagens de `converted`/`skipped`, `force` e o bruto novo ou alterado seguem como antes.
 - CI: o pyproject declara o PyPI antes do índice Quantilica (`[[tool.uv.index]]`), e o workflow perde `--index` e `--index-strategy`. Com a estratégia padrão `first-index`, o `uv sync` só consulta o índice para o que não está no PyPI (`quantilica-analytics`) e deixa de receber o 503 intermitente que o GitHub Pages devolve a caminhos inexistentes.
 
 ## [2.7.0] - 2026-11-14
