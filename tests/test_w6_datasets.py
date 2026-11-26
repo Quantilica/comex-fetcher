@@ -23,6 +23,14 @@ from comex_fetcher.lake import SOURCE_ID, converter  # noqa: E402
 from comex_fetcher.payload import csv_header_ok, json_header_ok  # noqa: E402
 from comex_fetcher.plugin import ComexFetcherApp, path_builder  # noqa: E402
 
+
+def _unico(achados) -> Path:
+    """O único caminho de `achados`; falha se houver zero ou mais de um."""
+    lista = sorted(achados)
+    assert len(lista) == 1, lista
+    return lista[0]
+
+
 FIXTURES = Path(__file__).parent / "fixtures"
 CSV = (
     "CO_ANO;CO_MES;CO_NCM;CO_PAIS;VL_FOB\n"
@@ -111,7 +119,7 @@ def test_ncm_vigente_from_real_siscomex_sample(tmp_path: Path) -> None:
     assert (res.converted, res.errors) == (1, [])
     dataset = tmp_path / "lake" / SOURCE_ID / "ncm-vigente"
     assert check_dataset(dataset) == []
-    df = pl.read_parquet(next(dataset.rglob("*.parquet")))
+    df = pl.read_parquet(_unico(dataset.rglob("*.parquet")))
     row = df.filter(pl.col("codigo") == "0101.21.00").row(0, named=True)
     assert row["codigo_ncm"] == "01012100" and row["nivel_digitos"] == 8
     assert row["data_inicio"] == dt.date(2022, 4, 1)
