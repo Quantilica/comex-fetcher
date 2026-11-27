@@ -90,7 +90,18 @@ CODE_COLUMNS = frozenset(
 CSV_DIALECT: dict[str, str] = {"quote": '"', "escape": '"'}
 _TABULAR_MEMBERS = (".csv", ".xlsx")
 
-_YEAR = re.compile(r"[-_](?P<ano>(?:19|20)\d{2})(?:@|\.|$|\b)")
+#: ano no nome do bruto: ``exp_2023@...``, ``EXP_2023.csv`` e também
+#: ``EXP_2023_MUN.csv``. O antigo ``\b`` não separa dígito de ``_`` (os dois são
+#: ``\w``), e os nomes do servidor com ``_MUN``/``_NBM`` ficavam sem ano.
+_YEAR = re.compile(r"[-_](?P<ano>(?:19|20)\d{2})(?=[-_@.]|$)")
+
+#: nome com que o servidor publica os brutos de comércio (``EXP_1997.csv``,
+#: ``IMP_2024_MUN.csv``, ``EXP_1989_NBM.csv``), salvo sem carimbo ``@AAAAMMDD``
+#: por downloads antigos; o fetcher grava ``exp-mun/exp-mun_2024@AAAAMMDD.csv``.
+_SERVER_TRADE_NAME = re.compile(
+    r"^(?P<dir>EXP|IMP)_(?P<ano>(?:19|20)\d{2})(?:_(?P<kind>MUN|NBM))?\.csv$",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -120,6 +131,35 @@ def resolve_dataset(path: Path) -> str | None:
         if path.name.lower().startswith(alias):
             return ds
     return None
+
+
+def canonical_raw_rel(rel: str) -> str | None:
+    """Chave do bruto ``rel`` (relativo à raiz) para escolher a versão corrente.
+
+    Um bruto com o nome do servidor (``exp-mun/EXP_1997_MUN.csv``) e o mesmo
+    bruto gravado pelo fetcher (``exp-mun/exp-mun_1997@20210407.csv``) são o
+    mesmo arquivo, mas ``select_current`` agrupa por nome e os trataria como
+    dois, e a partição ganharia dois Parquets com as mesmas linhas. Aqui o nome
+    do servidor vira ``exp-mun/exp-mun_1997.csv``, a versão sem carimbo (a mais
+    antiga) da chave do fetcher: perde para a carimbada e só é convertido
+    quando está sozinho. Os demais nomes voltam inalterados.
+
+    Devolve ``None`` quando o nome do servidor não combina com a pasta
+    (``exp-mun/EXP_1989_NBM.csv``, cópia fora do lugar): convertê-lo gravaria
+    linhas NBM no dataset municipal.
+    """
+    parent, _, name = rel.rpartition("/")
+    match = _SERVER_TRADE_NAME.match(name)
+    if not match:
+        return rel
+    kind = (match["kind"] or "").lower()
+    dataset = f"{match['dir'].lower()}-{kind}" if kind else match["dir"].lower()
+    folder = parent.rsplit("/", 1)[-1].lower()
+    folder_dataset = REVERSE_ALIASES.get(folder, folder)
+    if folder_dataset in TRADE_DATASETS and folder_dataset != dataset:
+        return None
+    canonical = f"{dataset}_{match['ano']}.csv"
+    return f"{parent}/{canonical}" if parent else canonical
 
 
 def resolve_year(path: Path) -> int | None:
@@ -390,17 +430,29 @@ class LakeConverter:
             and not p.name.endswith(".manifest.json")
         )
 
-        current = set(
-            select_current(p.relative_to(input_dir).as_posix() for p in candidates)
-        )
-        files = []
+        by_key: dict[str, list[Path]] = {}
         for path in candidates:
-            if path.relative_to(input_dir).as_posix() in current:
-                files.append(path)
+            key = canonical_raw_rel(path.relative_to(input_dir).as_posix())
+            if key is None:
+                ds = resolve_dataset(path)
+                if ds and ds in allowed:
+                    logger.warning(
+                        "%s: nome do servidor não combina com a pasta; ignorado",
+                        path.relative_to(input_dir).as_posix(),
+                    )
+                    result.skipped += 1
                 continue
-            ds = resolve_dataset(path)
-            if ds and ds in allowed:
-                result.skipped += 1
+            by_key.setdefault(key, []).append(path)
+        current = set(select_current(by_key))
+        files = []
+        for key in sorted(by_key):
+            for path in by_key[key]:
+                if key in current:
+                    files.append(path)
+                    continue
+                ds = resolve_dataset(path)
+                if ds and ds in allowed:
+                    result.skipped += 1
 
         writers: dict[str, LakeWriter] = {}
 
