@@ -5,6 +5,14 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+### Corrigido
+
+- `lake`: brutos salvos com o nome do servidor (`EXP_1997.csv`, `IMP_2024_MUN.csv`, `EXP_1989_NBM.csv`, sem carimbo `@AAAAMMDD`) contam como a versão mais antiga da chave do fetcher (`exp_1997`, `imp-mun_2024`, `exp-nbm_1989`). Antes, `select_current` os tratava como outro arquivo: ao lado da versão carimbada, a partição recebia dois Parquets com as mesmas linhas (`exp/ano=1997/EXP_1997.parquet` e `exp_1997.parquet`). Agora só a versão carimbada é convertida, e o nome do servidor só entra quando está sozinho.
+- `lake`: o ano é lido também de `EXP_2024_MUN.csv` e `IMP_1989_NBM.csv`. O `\b` do padrão não separa dígito de `_`, e esses nomes davam "não foi possível inferir ano da partição".
+- `lake`: bruto com nome do servidor que não combina com a pasta (`exp-mun/EXP_1989_NBM.csv`) é ignorado com aviso, em vez de gravar linhas NBM no dataset municipal.
+
 ## [2.7.1] - 2026-11-19
 
 ### Adicionado

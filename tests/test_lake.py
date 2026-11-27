@@ -20,6 +20,7 @@ from typer.testing import CliRunner
 from comex_fetcher.lake import (
     ALL_DATASETS,
     SOURCE_ID,
+    canonical_raw_rel,
     converter,
     resolve_dataset,
     resolve_year,
@@ -50,6 +51,26 @@ def test_resolve_year() -> None:
     assert resolve_year(Path("exp/exp_2023@20240315.csv")) == 2023
     assert resolve_year(Path("imp-nbm/imp-nbm_1994@20240315.csv")) == 1994
     assert resolve_year(Path("auxiliary-tables/ncm@20240315.csv")) is None
+    # nomes do servidor: o ano seguido de "_" também é ano
+    assert resolve_year(Path("exp/EXP_1997.csv")) == 1997
+    assert resolve_year(Path("exp-mun/EXP_2024_MUN.csv")) == 2024
+    assert resolve_year(Path("imp-nbm/IMP_1989_NBM.csv")) == 1989
+    assert resolve_year(Path("auxiliary-tables/UF_MUN.csv")) is None
+
+
+def test_canonical_raw_rel() -> None:
+    assert canonical_raw_rel("exp/EXP_1997.csv") == "exp/exp_1997.csv"
+    assert canonical_raw_rel("imp-mun/IMP_2024_MUN.csv") == "imp-mun/imp-mun_2024.csv"
+    assert canonical_raw_rel("exp-nbm/EXP_1989_NBM.csv") == "exp-nbm/exp-nbm_1989.csv"
+    assert canonical_raw_rel("trade_exp_mun/EXP_2024_MUN.csv") == (
+        "trade_exp_mun/exp-mun_2024.csv"
+    )
+    # nomes do fetcher e tabelas auxiliares não mudam
+    for unchanged in ("exp/exp_1997@20210727.csv", "auxiliary-tables/UF_MUN.csv"):
+        assert canonical_raw_rel(unchanged) == unchanged
+    # NBM dentro da pasta municipal: fora do lugar
+    assert canonical_raw_rel("exp-mun/EXP_1989_NBM.csv") is None
+    assert canonical_raw_rel("imp/IMP_2024_MUN.csv") is None
 
 
 def test_converter_datasets() -> None:
@@ -317,3 +338,54 @@ def test_csv_com_aspa_solta_na_amostra_e_reparado_sem_perder_linha(
     assert df.filter(pl.col("co_ppe") == "9001")["no_ppe"][0] == (
         'Paineis oriented strand board" (OSB)'
     )
+
+
+_MUN_HEADER = "CO_ANO;CO_MES;SH4;CO_PAIS;SG_UF_MUN;CO_MUN;KG_LIQUIDO;VL_FOB\n"
+_NBM_HEADER = "CO_ANO;CO_MES;CO_NBM;CO_PAIS;SG_UF_NBM;VL_FOB\n"
+
+
+def test_server_names_do_not_duplicate_partitions(tmp_path: Path) -> None:
+    """Nome do servidor ao lado da versão carimbada: um Parquet por partição."""
+    raw_dir = tmp_path / "raw"
+    lake_dir = tmp_path / "lake"
+    mun = raw_dir / "exp-mun"
+    nbm = raw_dir / "exp-nbm"
+    mun.mkdir(parents=True)
+    nbm.mkdir(parents=True)
+    row_2023 = "2023;01;0101;105;SP;3550308;10;1000\n"
+    # 2023: bruto do servidor e o mesmo bruto carimbado pelo fetcher
+    (mun / "EXP_2023_MUN.csv").write_text(_MUN_HEADER + row_2023, encoding="latin-1")
+    (mun / "exp-mun_2023@20240315.csv").write_text(
+        _MUN_HEADER + row_2023, encoding="latin-1"
+    )
+    # 2024: só o nome do servidor
+    (mun / "EXP_2024_MUN.csv").write_text(
+        _MUN_HEADER + "2024;02;0101;105;SP;3550308;20;2000\n", encoding="latin-1"
+    )
+    # NBM fora do lugar (cópia dentro da pasta municipal) e no lugar certo
+    nbm_body = _NBM_HEADER + "1994;07;01010101;105;SP;8500\n"
+    (mun / "EXP_1994_NBM.csv").write_text(nbm_body, encoding="latin-1")
+    (nbm / "EXP_1994_NBM.csv").write_text(nbm_body, encoding="latin-1")
+
+    res = converter.convert(raw_dir, lake_dir, datasets=["exp-mun", "exp-nbm"])
+    assert not res.errors, res.errors
+    assert res.converted == 3  # mun 2023 (carimbado), mun 2024, nbm 1994
+    assert res.skipped == 2  # mun 2023 do servidor e o NBM fora do lugar
+
+    mun_lake = lake_dir / SOURCE_ID / "exp-mun"
+    assert check_dataset(mun_lake) == []
+    assert sorted(p.parent.name for p in mun_lake.rglob("*.parquet")) == [
+        "ano=2023",
+        "ano=2024",
+    ]
+    df = scan_dataset(mun_lake).collect().sort("ano")
+    assert df["ano"].to_list() == [2023, 2024]
+    assert df["vl_fob"].cast(pl.Int64).to_list() == [1000, 2000]
+
+    nbm_lake = lake_dir / SOURCE_ID / "exp-nbm"
+    df_nbm = scan_dataset(nbm_lake).collect()
+    assert df_nbm["ano"].to_list() == [1994]
+
+    res2 = converter.convert(raw_dir, lake_dir, datasets=["exp-mun", "exp-nbm"])
+    assert not res2.errors, res2.errors
+    assert res2.converted == 0
