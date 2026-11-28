@@ -9,11 +9,27 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from quantilica.core.exceptions import CorruptPayloadError
+
 _BOM = b"\xef\xbb\xbf"
 
 
 class SoftErrorPayloadError(ValueError):
     """Corpo que não é o dado esperado (PHP/HTML no lugar do CSV/JSON)."""
+
+
+class ServerFileMissingError(CorruptPayloadError):
+    """Soft-206: o servidor devolveu código PHP no lugar de um arquivo inexistente.
+
+    É o equivalente de um 404 do MDIC. Continua sendo um ``CorruptPayloadError``
+    (erro do arquivo, como sempre foi); só o ``sync`` de uma entrada marcada com
+    ``pending_publication`` o converte em 404 ("ainda não publicado").
+    """
+
+
+def looks_like_php(head: bytes) -> bool:
+    """Se os primeiros bytes são código-fonte PHP (``<?php``), não dado nem HTML."""
+    return head.lstrip(_BOM).lstrip().lower().startswith(b"<?")
 
 
 def looks_like_error_page(head: bytes) -> bool:

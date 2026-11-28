@@ -5,6 +5,18 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+
+- `catalog`: o ano do comércio (NCM, `EXP_<ano>.csv`/`IMP_<ano>.csv` e as versões municipais) deixa de ser fixado na importação do módulo: é calculado a cada `list_datasets` (parâmetro `today`, só para testes). `GROUPS` guarda só o nome de cada grupo; as entradas saem de `list_datasets`.
+- `catalog`: em janeiro o arquivo do ano novo ainda não existe (404, ou o "soft-206" do servidor), e o `sync` saía 3 todo dia até o MDIC publicar o primeiro mês. As entradas do ano corrente (NCM e municipal; as tabelas e a série NBM, fechadas, nunca) levam `pending_publication` por 60 dias desde 1º de janeiro (`PENDING_GRACE_DAYS`, estimativa: a divulgação de janeiro sai no começo de fevereiro). Nesse período, o `sync` do host conta o arquivo ausente como "ainda não publicado" (pulado, sem erro; no `check`, motivo `pending-publication`). Passada a folga, o arquivo ausente volta a ser erro.
+- `sync`: o soft-206 (206 com código PHP no lugar de um arquivo inexistente) é o 404 do servidor. Passa a levantar `ServerFileMissingError` (subclasse de `CorruptPayloadError`, mesma família do erro de hoje, com a mensagem acrescida de "soft-206"), e só para entrada marcada com `pending_publication` o `ComexFetcherApp.download_entry` o converte em 404. Para as demais entradas, nada muda: segue erro do arquivo. HTML (manutenção, WAF) nunca é convertido.
+
+### Alterado
+
+- Requer `quantilica-cli>=0.30.0` como host (reconhece `pending_publication`).
+
 ## [2.7.2] - 2026-11-27
 
 ### Corrigido

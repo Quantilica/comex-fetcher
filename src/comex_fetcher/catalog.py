@@ -1,6 +1,7 @@
 """COMEX unified dataset catalog."""
 
 import datetime as dt
+from collections.abc import Callable
 from typing import Any
 
 from .constants import (
@@ -12,14 +13,34 @@ from .constants import (
 )
 from .urls import get_url
 
-# Generate years
-_CURRENT_YEAR = dt.datetime.now().year
-_YEARS_NCM = list(range(1997, _CURRENT_YEAR + 1))
+_FIRST_YEAR_NCM = 1997
 _YEARS_NBM = list(range(1989, 1997))
+
+# O arquivo do ano novo (``EXP_2027.csv``, ``IMP_2027_MUN.csv``) só passa a
+# existir quando o MDIC publica o primeiro mês do ano (a divulgação mensal sai no
+# começo do mês seguinte). Até lá o servidor responde 404, ou 206 com código PHP
+# no lugar do arquivo (o "soft-206", ver ``payload.py``). A entrada do ano
+# corrente leva ``pending_publication`` (esse "arquivo inexistente" vira "ainda
+# não publicado", sem erro) por esta folga, contada desde 1º de janeiro: 1º de
+# março, com margem sobre a divulgação de janeiro (começo de fevereiro). Passada
+# a folga, o arquivo ausente volta a ser erro. Estimativa, não medida: ajuste se o
+# MDIC publicar mais tarde. O ano é calculado a cada listagem, não na importação.
+PENDING_GRACE_DAYS = 60
+
+
+def _pending_year(today: dt.date) -> int | None:
+    """Ano cuja entrada ainda pode não estar publicada em ``today``, se houver."""
+    year = today.year
+    limit = dt.date(year, 1, 1) + dt.timedelta(days=PENDING_GRACE_DAYS)
+    return year if today <= limit else None
 
 
 def _make_trade_entries(
-    direction: str, years: list[int], mun: bool = False, nbm: bool = False
+    direction: str,
+    years: list[int],
+    mun: bool = False,
+    nbm: bool = False,
+    pending_year: int | None = None,
 ) -> list[dict[str, Any]]:
     entries = []
     group = f"trade-{direction}"
@@ -33,28 +54,21 @@ def _make_trade_entries(
         base_name = direction
 
     for y in years:
-        entries.append(
-            {
-                "id": f"{base_name}-{y}",
-                "group": group,
-                "url": get_url(base_name, year=y),
-                "ext": "csv",
-                "year": y,
-                "direction": direction,
-                "mun": mun,
-                "nbm": nbm,
-                "is_trade": True,
-            }
-        )
+        entry: dict[str, Any] = {
+            "id": f"{base_name}-{y}",
+            "group": group,
+            "url": get_url(base_name, year=y),
+            "ext": "csv",
+            "year": y,
+            "direction": direction,
+            "mun": mun,
+            "nbm": nbm,
+            "is_trade": True,
+        }
+        if y == pending_year:
+            entry["pending_publication"] = True
+        entries.append(entry)
     return entries
-
-
-_ENTRIES_EXP = _make_trade_entries("exp", _YEARS_NCM)
-_ENTRIES_IMP = _make_trade_entries("imp", _YEARS_NCM)
-_ENTRIES_EXP_MUN = _make_trade_entries("exp", _YEARS_NCM, mun=True)
-_ENTRIES_IMP_MUN = _make_trade_entries("imp", _YEARS_NCM, mun=True)
-_ENTRIES_EXP_NBM = _make_trade_entries("exp", _YEARS_NBM, nbm=True)
-_ENTRIES_IMP_NBM = _make_trade_entries("imp", _YEARS_NBM, nbm=True)
 
 
 def _make_table_entries(group: str, table_dict: dict) -> list[dict[str, Any]]:
@@ -91,17 +105,51 @@ _ENTRIES_VALIDATION = _make_table_entries("validation", TOTAIS_PARA_VALIDACAO)
 _ENTRIES_OTHER = _make_table_entries("other", OTHER_TABLES)
 
 GROUPS = {
-    "trade-exp": {"name": "Exportação", "entries": _ENTRIES_EXP},
-    "trade-imp": {"name": "Importação", "entries": _ENTRIES_IMP},
-    "trade-exp-mun": {"name": "Exportação Municipal", "entries": _ENTRIES_EXP_MUN},
-    "trade-imp-mun": {"name": "Importação Municipal", "entries": _ENTRIES_IMP_MUN},
-    "trade-exp-nbm": {"name": "Exportação NBM", "entries": _ENTRIES_EXP_NBM},
-    "trade-imp-nbm": {"name": "Importação NBM", "entries": _ENTRIES_IMP_NBM},
-    "auxiliary": {"name": "Tabelas Auxiliares", "entries": _ENTRIES_AUX},
-    "repetro": {"name": "Tabelas REPETRO", "entries": _ENTRIES_REPETRO},
-    "validation": {"name": "Totais para Validação", "entries": _ENTRIES_VALIDATION},
-    "other": {"name": "Outras Tabelas", "entries": _ENTRIES_OTHER},
+    "trade-exp": {"name": "Exportação"},
+    "trade-imp": {"name": "Importação"},
+    "trade-exp-mun": {"name": "Exportação Municipal"},
+    "trade-imp-mun": {"name": "Importação Municipal"},
+    "trade-exp-nbm": {"name": "Exportação NBM"},
+    "trade-imp-nbm": {"name": "Importação NBM"},
+    "auxiliary": {"name": "Tabelas Auxiliares"},
+    "repetro": {"name": "Tabelas REPETRO"},
+    "validation": {"name": "Totais para Validação"},
+    "other": {"name": "Outras Tabelas"},
 }
+
+# Tabelas: não dependem do ano, geradas uma vez.
+_TABLE_ENTRIES: dict[str, list[dict[str, Any]]] = {
+    "auxiliary": _ENTRIES_AUX,
+    "repetro": _ENTRIES_REPETRO,
+    "validation": _ENTRIES_VALIDATION,
+    "other": _ENTRIES_OTHER,
+}
+
+
+def _group_entries(group: str, today: dt.date) -> list[dict[str, Any]]:
+    """Entradas de um grupo canônico; o ano corrente é o de ``today``."""
+    if group in _TABLE_ENTRIES:
+        return _TABLE_ENTRIES[group]
+    years_ncm = list(range(_FIRST_YEAR_NCM, today.year + 1))
+    pending = _pending_year(today)
+    builders: dict[str, Callable[[], list[dict[str, Any]]]] = {
+        "trade-exp": lambda: _make_trade_entries(
+            "exp", years_ncm, pending_year=pending
+        ),
+        "trade-imp": lambda: _make_trade_entries(
+            "imp", years_ncm, pending_year=pending
+        ),
+        "trade-exp-mun": lambda: _make_trade_entries(
+            "exp", years_ncm, mun=True, pending_year=pending
+        ),
+        "trade-imp-mun": lambda: _make_trade_entries(
+            "imp", years_ncm, mun=True, pending_year=pending
+        ),
+        "trade-exp-nbm": lambda: _make_trade_entries("exp", _YEARS_NBM, nbm=True),
+        "trade-imp-nbm": lambda: _make_trade_entries("imp", _YEARS_NBM, nbm=True),
+    }
+    return builders[group]()
+
 
 GROUP_ALIASES = {
     "trade": [
@@ -116,24 +164,31 @@ GROUP_ALIASES = {
 }
 
 
-def list_datasets(group: str | None = None) -> list[dict[str, Any]]:
+def list_datasets(
+    group: str | None = None, *, today: dt.date | None = None
+) -> list[dict[str, Any]]:
     """Lists available datasets in the catalog.
 
     Args:
         group (str | None): The specific group to list datasets for. If None,
             returns all datasets across all groups.
+        today (dt.date | None): Reference day (default: today). The current
+            year of the trade files is computed from it at each call.
 
     Returns:
-        list[dict[str, Any]]: A list of dataset entry dictionaries.
+        list[dict[str, Any]]: A list of dataset entry dictionaries. The current
+            year's trade entries carry ``pending_publication`` while the file may
+            not be published yet (see ``PENDING_GRACE_DAYS``).
 
     Raises:
         ValueError: If an unknown group is provided.
     """
+    today = today or dt.date.today()
     if group is not None:
         if group in GROUPS:
-            return GROUPS[group]["entries"]
+            return list(_group_entries(group, today))
         if group in GROUP_ALIASES:
-            return [e for g in GROUP_ALIASES[group] for e in GROUPS[g]["entries"]]
+            return [e for g in GROUP_ALIASES[group] for e in _group_entries(g, today)]
         raise ValueError(f"Unknown group: {group!r}")
 
-    return [e for g in GROUPS.values() for e in g["entries"]]
+    return [e for g in GROUPS for e in _group_entries(g, today)]
