@@ -28,8 +28,13 @@ class ServerFileMissingError(CorruptPayloadError):
 
 
 def looks_like_php(head: bytes) -> bool:
-    """Se os primeiros bytes são código-fonte PHP (``<?php``), não dado nem HTML."""
-    return head.lstrip(_BOM).lstrip().lower().startswith(b"<?")
+    """Se os primeiros bytes são código-fonte PHP (``<?php``), não dado nem HTML.
+
+    Só ``<?php`` (sem diferenciar maiúsculas) é o que o servidor devolve com 206 para
+    um arquivo inexistente. Outras aberturas ``<?`` (``<?xml`` de uma página XHTML
+    de manutenção, por exemplo) NÃO contam: não provam que o arquivo não existe.
+    """
+    return head.lstrip(_BOM).lstrip().lower().startswith(b"<?php")
 
 
 def looks_like_error_page(head: bytes) -> bool:

@@ -162,3 +162,36 @@ def test_soft_206_de_ano_fechado_nunca_e_perdoado(tmp_path: Path) -> None:
     code, data = _sync(app, tmp_path)
     assert code == EXIT_SYNC_PARTIAL
     assert [e["id"] for e in data["errors"]] == ["exp-2026"]
+
+
+def test_looks_like_php_so_aceita_php() -> None:
+    from comex_fetcher.payload import looks_like_error_page, looks_like_php
+
+    assert looks_like_php(b"<?php\n/** Joomla */")
+    assert looks_like_php(b"\xef\xbb\xbf  <?PHP echo 1;")
+    for other in (b"<?xml version='1.0'?>", b"<?", b"<!DOCTYPE html>", b"<html>"):
+        assert not looks_like_php(other), other
+    # a guarda de cabeçalho segue barrando todas essas aberturas
+    assert looks_like_error_page(b"<?xml version='1.0'?>")
+
+
+def test_pagina_xhtml_de_manutencao_nao_vira_ainda_nao_publicado(
+    tmp_path: Path,
+) -> None:
+    """``<?xml`` em entrada pendente segue erro do arquivo (não prova que sumiu)."""
+    xhtml = b"<?xml version='1.0'?>\n<html><body>Em manutencao</body></html>\n"
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if "2027" in str(request.url):
+            return httpx2.Response(206, content=xhtml)
+        return httpx2.Response(200, content=CSV)
+
+    app = _app(NEW_YEAR, "php")
+    app.client = HttpClient(
+        transport=httpx2.MockTransport(handler), attempts=1, retry_base_delay=0
+    )
+    code, data = _sync(app, tmp_path)
+    assert code == EXIT_SYNC_PARTIAL
+    assert [e["id"] for e in data["errors"]] == ["exp-2027"]
+    assert data["skipped_items"] == []
+    assert "soft-206" not in data["errors"][0]["message"]
